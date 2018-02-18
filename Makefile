@@ -7,11 +7,30 @@
 # but is using both and I2C based gyrometer and thermometer.
 #
 
+DEV_ROCKS = "busted 2.0.rc12" "luacheck 0.20.0"
+
 help:           ## Show this help.
 	@echo "make <target>, where <target> is one of:" 
 	@grep -h "\t##" $(MAKEFILE_LIST) | sed -e 's/:.*##/	/' | expand -t16
 
 all: firmware		## Build all
+
+dev:
+	@for rock in $(DEV_ROCKS) ; do \
+          if luarocks list --porcelain $$rock | grep -q "installed" ; then \
+            echo $$rock already installed, skipping ; \
+          else \
+            echo $$rock not found, installing via luarocks... ; \
+            luarocks install --local $$rock ; \
+          fi \
+        done;
+
+test:
+	$(HOME)/.luarocks/bin/busted spec
+
+##
+## Firmware
+##
 
 firmware: nodemcu-firmware	## Build the firmware image
 	# Options: IMAGE_NAME, INTEGER_ONLY=1, FLOAT_ONLY=1
