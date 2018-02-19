@@ -1,1 +1,3 @@
 nodemcu-firmware
+*.swp
+*.swo

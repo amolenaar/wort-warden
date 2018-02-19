@@ -1,5 +1,7 @@
 -- # Stub implementation for NodeMCU file module
 --
+-- https://nodemcu.readthedocs.io/en/master/en/modules/file/
+--
 -- file.exists()	Determines whether the specified file exists.
 -- file.open()		Opens a file for access, potentially creating it (for write modes).
 -- file.obj:read()	Read content from the open file.
