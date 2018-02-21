@@ -14,10 +14,10 @@ I hope the installation process will be simpler as well, but that remains to be 
 
 * [PETling XXL](https://www.cache-corner.de/Cachebehaelter/Small/XXL-PETling.html)
 * [Wemos D1 mini](https://wemos.cc)
-* [MCP9808](http://ww1.microchip.com/downloads/en/DeviceDoc/25095A.pdf) breakout board (thermometer) 
-* GY-152 / [MPU-6050](https://store.invensense.com/datasheets/invensense/MPU-6050_DataSheet_V3%204.pdf) breakout board (gyroscope) 
+* Thermometer: [MCP9808](http://ww1.microchip.com/downloads/en/DeviceDoc/25095A.pdf) breakout board
+* Gyroscope: GY-521 [MPU-6050](https://store.invensense.com/datasheets/invensense/MPU-6050_DataSheet_V3%204.pdf) breakout board
 * NCR18650B Rechargeable Li-ion Battery (3.7 V)
-* TP4056 Lithium Battery Charger Module
+* [TP4056](https://hackaday.io/project/9900-rian-simple-and-easy-built-robot-for-education/log/33402-charge-circuit-tp4056-with-over-discharge-protection) Lithium Battery Charger Module
 * Battery holder
 
 Backlog:
