@@ -63,7 +63,7 @@ upload: lint test .uploads .uploads/init .uploads/main	## Upload modified files 
 ## Firmware
 ##
 
-firmware: nodemcu-firmware	## Build the firmware image
+firmware: nodemcu-firmware nodemcu-firmware/app/include/user_modules.h	## Build the firmware image
 	# Options: IMAGE_NAME, INTEGER_ONLY=1, FLOAT_ONLY=1
 	docker run --rm -ti -e IMAGE_NAME=wort-warden -v $(PWD)/nodemcu-firmware:/opt/nodemcu-firmware marcelstoer/nodemcu-build
 
@@ -72,5 +72,10 @@ flash: firmware		## Flash ESP8266 with firmware image
 
 nodemcu-firmware:	## Clone the firmware repository
 	git clone git@github.com:nodemcu/nodemcu-firmware.git
+	@sleep 1 # Ensure user_modules.h becomes newer than the checked out file
+	touch user_modules.h
+
+nodemcu-firmware/app/include/user_modules.h: user_modules.h
+	cp user_modules.h nodemcu-firmware/app/include
 
 .PHONY: help all dev lua-deps python-deps lint test upload firmware flash
