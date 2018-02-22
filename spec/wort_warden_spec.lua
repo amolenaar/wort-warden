@@ -1,12 +1,10 @@
 
-package.path = package.path..';lib/?.lua;stubs/?.lua'
+package.path = package.path..';lib/?.lua'
 
-describe("Wort Warden", function()
 
-  it("should start as a WiFi Access Point", function()
-  end)
-
+describe("Once configured", function()
   it("should measure temperature", function()
+
   end)
 
   it("should measure orientation", function()

@@ -1,5 +1,6 @@
 nodemcu-firmware/
 .python-env/
-lib/.*.upload
+.uploads/
+.vscode/
 *.swp
 *.swo

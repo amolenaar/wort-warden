@@ -13,7 +13,7 @@ ROCKS_PATH = $(shell luarocks config --rock-trees | head -1 | cut -f1 )
 SERIAL_PORT = /dev/null
 
 help:           ## Show this help
-	@echo "make <target>, where <target> is one of:" 
+	@echo "make <target>, where <target> is one of:"
 	@grep -h "\t##" $(MAKEFILE_LIST) | sed -e 's/:.*##/	/' | expand -t20
 
 all: firmware		## Build all
@@ -40,7 +40,7 @@ python-deps: .python-env	## Install Python dependencies
 	  echo "I will try to install Virtualenv globally, your password may be required" ; \
 	  sudo pip install virtualenv && virtualenv .python-env ; \
 	fi
-  
+
 ##
 ## The application
 ##
@@ -51,9 +51,12 @@ lint:		## Check file validity
 test:		## Run unit tests
 	$(HOME)/.luarocks/bin/busted spec
 
-upload: lint test lib/.init.upload lib/.main.upload	## Upload modified files to the ESP8266
+upload: lint test .uploads .uploads/init .uploads/main	## Upload modified files to the ESP8266
 
-lib/.%.upload: lib/%.lua
+.uploads:
+	mkdir -p .uploads
+
+.uploads/%: lib/%.lua
 	@echo ">> .python-env/bin/nodemcu-uploader $< && touch $@"
 
 ##
