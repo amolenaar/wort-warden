@@ -49,7 +49,7 @@ lint:		## Check file validity
 	$(ROCKS_PATH)/bin/luacheck lib
 
 test:		## Run unit tests
-	$(HOME)/.luarocks/bin/busted spec
+	$(HOME)/.luarocks/bin/busted -v spec
 
 upload: lint test .uploads .uploads/init .uploads/main	## Upload modified files to the ESP8266
 
