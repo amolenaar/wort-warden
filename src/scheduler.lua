@@ -1,17 +1,15 @@
 
-local queue = {}
-
-function queue.new()
+local function qnew()
     return {first = 0, last = -1}
 end
 
-function queue.push(q, value)
+local function qpush(q, value)
     local first = q.first - 1
     q.first = first
     q[first] = value
 end
 
-function queue.pop(q)
+local function qpop(q)
     local last = q.last
     if q.first > last then return nil, "queue is empty" end
     local value = q[last]
@@ -20,17 +18,12 @@ function queue.pop(q)
     return value
 end
 
-function queue.empty(q)
-    return q.first > q.last and true or false
-end
-
-
 job_list = {}
 local job_id = 0
 
 function schedule(func)
   job_id = job_id + 1
-  job_list[job_id] = {coroutine.create(func), queue.new()}
+  job_list[job_id] = {coroutine.create(func), qnew()}
   return job_id
 end
 
@@ -40,15 +33,15 @@ function start()
   local loop = coroutine.create(function()
     local job_list, next = job_list, next
     local yield, resume, status = coroutine.yield, coroutine.resume, coroutine.status
-    local push, pop = queue.push, queue.pop
+    local qpush, qpop = qpush, qpop
     local st, dp, dm
     while next(job_list) ~= nil do
       for id, aq in pairs(job_list) do
-        st, dp, dm = resume(aq[1], pop(aq[2]))
+        st, dp, dm = resume(aq[1], qpop(aq[2]))
         if dp and dm ~= nil then
           local tg = job_list[dp]
           if tg then
-            push(tg[2], dm)
+            qpush(tg[2], dm)
           end
         end
         if not st or status(aq[1]) == "dead" then
