@@ -6,20 +6,29 @@
 
 local tmr = {
   ALARM_SINGLE="ALARM_SINGLE",
-  ALARM_SEMI="ALARM_SEMI",
+  -- Do not use: ALARM_SEMI="ALARM_SEMI",
   ALARM_AUTO="ALARM_AUTO"
-} 
+}
 
-tmr._timers = {}
+local _timers = {}
 
 function tmr.alarm(ref, interval_ms, mode, func)
   -- start coroutine to run func(ref)
-  table.insert(tmr._timers, coroutine.create(function() func(ref) end))
+  _timers[ref] = {mode, func}
+end
+
+function tmr.deregister(ref)
+  _timers[ref] = nil
 end
 
 function tmr.run_all_timers()
-  for i = 1, #tmr._timers do
-    corouine.resume(tmr._timers[i])
+  while next(_timers) ~= nil do
+    for ref, mf in pairs(_timers) do
+      mf[2](ref)
+      if mf[1] == tmr.ALARM_SINGLE then
+        tmr.deregister(ref)
+      end
+    end
   end
 end
 
