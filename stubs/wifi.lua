@@ -10,6 +10,9 @@ local wifi = {
   STATIONAP="STATIONAP",
   sta={},
   ap={},
+  eventmon={
+    STA_CONNECTED="STA_CONNECTED"
+  }
 }
 
 local state = {}
@@ -26,6 +29,10 @@ end
 
 function wifi.sta.config(station_config)
   state.sta_station_config = station_config
+end
+
+function wifi.eventmon.register(event, func)
+  state.eventmon_sta_connected = func
 end
 
 return wifi
