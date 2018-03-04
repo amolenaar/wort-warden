@@ -9,3 +9,4 @@ end
 
 print('Hello World')
 
+-- dofile('main.lc')

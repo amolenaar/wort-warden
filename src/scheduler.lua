@@ -53,6 +53,7 @@ function start()
   end)
 
   local resume = coroutine.resume
+  -- Use node.task.post instead
   tmr.alarm(1, 0, tmr.ALARM_AUTO, function(timer_id)
     if not resume(loop) then
       tmr.deregister(timer_id)

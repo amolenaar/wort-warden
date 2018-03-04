@@ -8,6 +8,7 @@ function measure_temperature()
 end
 
 function measure_angle()
+  -- Perform i2c config only on cold boot. If started from deep sleep, it should not be nessecary
   i2c.start(0)
   i2c.address(0, dev_addr, i2c.RECEIVER)
   c = i2c.read(0, 1)
