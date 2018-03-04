@@ -58,4 +58,4 @@ function main()
   node.dsleep(0)
 end
 
-return main
+main()
