@@ -74,7 +74,7 @@ describe("Scheduled routines", function()
     end)
 
     start()
-    tmr.run_all_timers()
+    node.main_loop()
 
     assert.are.equal("been there", value)
   end)
@@ -94,7 +94,7 @@ describe("Scheduled routines", function()
     end)
 
     start()
-    tmr.run_all_timers()
+    node.main_loop()
 
     assert.are.equal("been there", value)
   end)

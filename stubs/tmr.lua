@@ -13,7 +13,6 @@ local tmr = {
 local _timers = {}
 
 function tmr.alarm(ref, interval_ms, mode, func)
-  -- start coroutine to run func(ref)
   _timers[ref] = {mode, func}
 end
 

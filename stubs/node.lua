@@ -19,4 +19,8 @@ end
 
 stub(node, "dsleep")
 
+function node.main_loop()
+  tmr.run_all_timers()
+end
+
 return node
