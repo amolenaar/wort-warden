@@ -10,7 +10,7 @@
 
 DEV_ROCKS = "busted 2.0.rc12" "luacheck 0.20.0" "luafilesystem 1.7.0-2"
 ROCKS_PATH = $(shell luarocks config --rock-trees | head -1 | cut -f1 )
-SERIAL_PORT = /dev/null
+SERIAL_PORT = /dev/cu.wchusbserial14420
 
 help:           ## Show this help
 	@echo "make <target>, where <target> is one of:"
@@ -51,24 +51,26 @@ lint:		## Check file validity
 test:		## Run unit tests
 	$(HOME)/.luarocks/bin/busted -v spec
 
-upload: lint test .uploads .uploads/init .uploads/main	## Upload modified files to the ESP8266
+upload: lint test .uploads/init .uploads/main	## Upload modified files to the ESP8266
 
 .uploads:
 	mkdir -p .uploads
 
-.uploads/%: lib/%.lua
-	@echo ">> .python-env/bin/nodemcu-uploader $< && touch $@"
+.uploads/%:  src/%.lua .uploads
+	cd src && ../.python-env/bin/nodemcu-uploader --port $(SERIAL_PORT) --baud 115200 upload --compile $$(basename $<) && touch ../$@
 
 ##
 ## Firmware
 ##
 
-firmware: nodemcu-firmware nodemcu-firmware/app/include/user_modules.h	## Build the firmware image
+firmware: nodemcu-firmware/bin/nodemcu_integer_wort-warden.bin	## Build the firmware image
+
+flash: nodemcu-firmware/bin/nodemcu_integer_wort-warden.bin	## Flash ESP8266 with firmware image
+	.python-env/bin/esptool.py --port $(SERIAL_PORT) write_flash 0x00000 nodemcu-firmware/bin/nodemcu_integer_wort-warden.bin
+
+nodemcu-firmware/bin/nodemcu_integer_wort-warden.bin: nodemcu-firmware nodemcu-firmware/app/include/user_modules.h
 	# Options: IMAGE_NAME, INTEGER_ONLY=1, FLOAT_ONLY=1
 	docker run --rm -ti -e IMAGE_NAME=wort-warden -v $(PWD)/nodemcu-firmware:/opt/nodemcu-firmware marcelstoer/nodemcu-build
-
-flash: firmware		## Flash ESP8266 with firmware image
-	@echo "esptool.py --port $(SERIAL_PORT) write_flash 0x00000 nodemcu-firmware/bin/nodemcu_integer_wort-warden.bin"
 
 nodemcu-firmware:	## Clone the firmware repository
 	git clone git@github.com:nodemcu/nodemcu-firmware.git
