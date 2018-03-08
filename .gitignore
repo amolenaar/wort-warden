@@ -1,3 +1,4 @@
+src/config.lua
 nodemcu-firmware/
 .python-env/
 .uploads/

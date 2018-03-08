@@ -1,4 +1,6 @@
 
+local CFG = require('config')
+
 -- local function measure_temperature(dev_addr)
 --   i2c.start(0)
 --   i2c.address(0, dev_addr, i2c.RECEIVER)
@@ -53,7 +55,7 @@
   -- tmr.alarm(0, 0, tmr.ALARM_SINGLE, measure_temperature)
   -- tmr.alarm(1, 0, tmr.ALARM_SINGLE, measure_angle)
 
-  wifi.sta.config {ssid="xx", pwd="xx"}
+  wifi.sta.config {ssid=CFG.ssid, pwd=CFG.pwd}
   wifi.sta.connect()
   -- tmr.alarm(2, 1000, tmr.ALARM_AUTO, enable_wifi)
   -- measure temperature2
@@ -69,7 +71,7 @@
 function send_to_ubidots()
   local CLIENT_ID=tostring(node.chipid())
 
-  m = mqtt.Client(CLIENT_ID, 120, USERNAME, "")
+  m = mqtt.Client(CLIENT_ID, 120, CFG.token, "")
 
   m:on("connect", function(client) print ("connected") end)
   m:on("offline", function(client) print ("offline") end)
