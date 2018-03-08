@@ -31,6 +31,9 @@ function wifi.sta.config(station_config)
   state.sta_station_config = station_config
 end
 
+function wifi.sta.connect()
+end
+
 function wifi.eventmon.register(event, func)
   state.eventmon_sta_connected = func
 end

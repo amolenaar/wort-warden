@@ -18,17 +18,19 @@ local function qpop(q)
     return value
 end
 
-job_list = {}
+local job_list = {}
 local job_id = 0
 
+-- luacheck: ignore 111
 function schedule(func)
   job_id = job_id + 1
   job_list[job_id] = {coroutine.create(func), qnew()}
   return job_id
 end
 
-send_receive = coroutine.yield
+-- send_receive = coroutine.yield
 
+-- luacheck: ignore 111
 function start()
   local loop = coroutine.create(function()
     local job_list, next = job_list, next
