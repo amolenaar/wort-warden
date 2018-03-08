@@ -6,3 +6,7 @@ globals = {
   "tmr",
   "wifi"
 }
+
+files["src/scheduler.lua"].ignore = {
+  "431" -- shadowing upvalue
+}

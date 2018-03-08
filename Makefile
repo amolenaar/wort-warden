@@ -18,9 +18,14 @@ help:           ## Show this help
 
 all: firmware		## Build all
 
-dev: python-deps lua-deps	## Set up your development environment
+dev: env-check python-deps lua-deps	## Set up your development environment, Lua and Python should be installed
 
-lua-deps:		## Install Lua dependencies
+env-check:
+	@which luarocks >&- || { echo "Luarocks not found. Please install Lua before proceeding" && exit 1; }
+	@which python >&- || { echo "Python not found. Please install Python before proceeding" && exit 1; }
+	@echo "Lua and Python have been found. Let's continue."
+
+lua-deps:
 	@for rock in $(DEV_ROCKS) ; do \
           if luarocks list --porcelain $$rock | grep -q "installed" ; then \
             echo $$rock already installed, skipping ; \
@@ -30,7 +35,7 @@ lua-deps:		## Install Lua dependencies
           fi \
         done;
 
-python-deps: .python-env	## Install Python dependencies
+python-deps: .python-env
 	@.python-env/bin/pip install nodemcu-uploader esptool
 
 .python-env:
@@ -46,10 +51,10 @@ python-deps: .python-env	## Install Python dependencies
 ##
 
 lint:		## Check file validity
-	$(ROCKS_PATH)/bin/luacheck lib
+	$(ROCKS_PATH)/bin/luacheck --codes src
 
 test:		## Run unit tests
-	$(HOME)/.luarocks/bin/busted -v spec
+	$(ROCKS_PATH)/bin/busted -v spec
 
 upload: lint test .uploads/init .uploads/main	## Upload modified files to the ESP8266
 
@@ -79,5 +84,17 @@ nodemcu-firmware:	## Clone the firmware repository
 
 nodemcu-firmware/app/include/user_modules.h: user_modules.h
 	cp user_modules.h nodemcu-firmware/app/include
+
+##
+## Auxilary commands
+##
+tty:	## Open a TTY (screen) session with the ESP8266
+	screen $(SERIAL_PORT) 115200
+
+list:	## List all files on the ESP8266
+	.python-env/bin/nodemcu-uploader --port $(SERIAL_PORT) --baud 115200 file list
+
+format:	## Format the flash storage on the ESP8266
+	.python-env/bin/nodemcu-uploader --port $(SERIAL_PORT) --baud 115200 file format
 
 .PHONY: help all dev lua-deps python-deps lint test upload firmware flash
