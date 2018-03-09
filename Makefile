@@ -74,16 +74,15 @@ flash: nodemcu-firmware/bin/nodemcu_integer_wort-warden.bin	## Flash ESP8266 wit
 	.python-env/bin/esptool.py --port $(SERIAL_PORT) write_flash 0x00000 nodemcu-firmware/bin/nodemcu_integer_wort-warden.bin
 
 nodemcu-firmware/bin/nodemcu_integer_wort-warden.bin: nodemcu-firmware nodemcu-firmware/app/include/user_modules.h
-	# Options: IMAGE_NAME, INTEGER_ONLY=1, FLOAT_ONLY=1
 	docker run --rm -ti -e IMAGE_NAME=wort-warden -v $(PWD)/nodemcu-firmware:/opt/nodemcu-firmware marcelstoer/nodemcu-build
 
 nodemcu-firmware:	## Clone the firmware repository
 	git clone git@github.com:nodemcu/nodemcu-firmware.git
 	@sleep 1 # Ensure user_modules.h becomes newer than the checked out file
-	touch user_modules.h
+	touch include/user_modules.h
 
-nodemcu-firmware/app/include/user_modules.h: user_modules.h
-	cp user_modules.h nodemcu-firmware/app/include
+nodemcu-firmware/app/include/user_modules.h: include/user_modules.h
+	cp include/user_modules.h nodemcu-firmware/app/include
 
 ##
 ## Auxilary commands
