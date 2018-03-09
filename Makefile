@@ -10,7 +10,7 @@
 
 DEV_ROCKS = "busted 2.0.rc12" "luacheck 0.20.0" "luafilesystem 1.7.0-2"
 ROCKS_PATH = $(shell luarocks config --rock-trees | head -1 | cut -f1 )
-SERIAL_PORT = /dev/cu.wchusbserial14420
+SERIAL_PORT = /dev/cu.wchusbserial*
 
 help:           ## Show this help
 	@echo "make <target>, where <target> is one of:"
