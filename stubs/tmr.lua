@@ -22,7 +22,7 @@ function tmr.alarm(ref, interval_ms, mode, func)
   _timers[ref] = {mode, func}
 end
 
-function tmr.deregister(ref)
+function tmr.unregister(ref)
   _timers[ref] = nil
 end
 
@@ -31,7 +31,7 @@ function tmr.run_all_timers()
     for ref, mf in pairs(_timers) do
       mf[2](ref)
       if mf[1] == tmr.ALARM_SINGLE then
-        tmr.deregister(ref)
+        tmr.unregister(ref)
       end
     end
   end

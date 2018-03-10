@@ -20,7 +20,7 @@ describe("Timer", function()
     tmr.alarm(1, 0, tmr.ALARM_AUTO, function(ref)
       counter = counter + 1
       if counter > 9 then
-        tmr.deregister(ref)
+        tmr.unregister(ref)
       end
     end)
 

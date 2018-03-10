@@ -61,7 +61,7 @@ function start()
   -- Put a 10ms interval here, to avoid busy waiting
   tmr.alarm(1, 10, tmr.ALARM_AUTO, function(timer_id)
     if not resume(loop) then
-      tmr.deregister(timer_id)
+      tmr.unregister(timer_id)
     end
   end)
 end
