@@ -63,6 +63,7 @@ upload: lint test .uploads/init .uploads/main .uploads/scheduler .uploads/atan2 
 
 .uploads/%:  src/%.lua .uploads
 	cd src && ../.python-env/bin/nodemcu-uploader --port $(SERIAL_PORT) --baud 115200 upload --compile $$(basename $<) && touch ../$@
+	@sleep 1
 
 ##
 ## Firmware
@@ -95,5 +96,6 @@ list:	## List all files on the ESP8266
 
 format:	## Format the flash storage on the ESP8266
 	.python-env/bin/nodemcu-uploader --port $(SERIAL_PORT) --baud 115200 file format
+	rm  .uploads/*
 
 .PHONY: help all dev lua-deps python-deps lint test upload firmware flash

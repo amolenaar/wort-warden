@@ -40,6 +40,7 @@ local function send_to_ubidots(jid, client, client_id)
   if type(msg) == "table" then
     msg = sjson.encode(msg)
   elseif msg == "TIMEOUT!" then
+    client:close()
     return
   end
 
@@ -50,7 +51,7 @@ end
 
 local function init_mqtt(jid)
   local now, yield = tmr.now, coroutine.yield
-  local timeout_at = now() + 10000  -- ms
+  local timeout_at = now() + 10000000 -- 10s
   local mqtt_client, failed
   local client_id = tostring(node.chipid())
   local m = mqtt.Client(client_id, 120, CFG.token, "")
@@ -73,11 +74,12 @@ local function init_mqtt(jid)
       return send_to_ubidots(jid, mqtt_client, client_id)
     end
   end
+  print('MQTT init failed')
 end
 
 local function init_wifi(jid)
   local now, yield = tmr.now, coroutine.yield
-  local timeout_at = now() + 10000  -- 10s
+  local timeout_at = now() + 10000000  -- 10s
 
   wifi.sta.config {ssid=CFG.ssid, pwd=CFG.pwd}
   wifi.sta.connect()
@@ -98,7 +100,8 @@ local function sample_node()
     -- don't bother continuing, the restart is scheduled
     return
   end
-  send(ubidots, {voltage=adc.readvdd33(), starts=rtcmem.read32(0)})
+  local br1, br2 = node.bootreason()
+  send(ubidots, {voltage=adc.readvdd33(), starts=rtcmem.read32(0), bootreason=br1*100 + br2})
 end
 
 local function sample_temp_gyro()
@@ -109,13 +112,17 @@ local function sample_temp_gyro()
   i2c.setup(0, sda, scl, i2c.SLOW)
 end
 
-
 local function main()
   ubidots = schedule(init_wifi)
   schedule(sample_node)
   schedule(sample_temp_gyro)
 
   start()
+
+  -- rtcmem.write32(0, 0)
+  node.dsleep(9000000) -- 900s, 15 min
+  -- node.dsleep(1800000000) -- 1800s, 30 min
 end
 
-main()
+return main
+-- main()
