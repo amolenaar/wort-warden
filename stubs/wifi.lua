@@ -34,6 +34,10 @@ end
 function wifi.sta.connect()
 end
 
+function wifi.sta.getip()
+  return {"192.168.0.12"}
+end
+
 function wifi.eventmon.register(event, func)
   state.eventmon_sta_connected = func
 end

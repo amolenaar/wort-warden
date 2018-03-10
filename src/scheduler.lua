@@ -25,7 +25,13 @@ local yield = coroutine.yield
 
 function schedule(func)
   local jid = next_job_id
-  job_list[jid] = {coroutine.create(func), qnew()}
+  local func2
+  -- if debug and debug.traceback then
+  --   func2 = function() xpcall(func, function() print(debug.traceback()) end) end
+  -- else
+    func2 = func
+  -- end
+  job_list[jid] = {coroutine.create(func2), qnew()}
   next_job_id = next_job_id + 1
   return jid
 end
@@ -34,13 +40,16 @@ function start()
   local loop = coroutine.create(function()
     local next = next
     local resume, status = coroutine.resume, coroutine.status
-    local st
+    local _, err
     while next(job_list) ~= nil do
       for id, aq in pairs(job_list) do
         job_id = id
-        st = resume(aq[1], id)
+        _, err = resume(aq[1], id)
         job_id = nil
-        if not st or status(aq[1]) == "dead" then
+        if err then
+          print('Coroutine failed: '..err)
+        end
+        if err or status(aq[1]) == "dead" then
           job_list[id] = nil
         end
         yield()
@@ -58,7 +67,11 @@ function start()
 end
 
 function send(jid, msg)
-  qpush(job_list[jid][2], msg)
+  if job_list[jid] then
+    qpush(job_list[jid][2], msg)
+  else
+    print("Cannot send message "..tostring(msg).." to jid "..tostring(jid))
+  end
 end
 
 -- Receive data. timeout is counted in cycles. One cycle is roughly 10ms

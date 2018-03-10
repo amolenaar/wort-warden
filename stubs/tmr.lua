@@ -12,6 +12,12 @@ local tmr = {
 
 local _timers = {}
 
+local _now = 1
+function tmr.now()
+  _now = _now + 1
+  return _now
+end
+
 function tmr.alarm(ref, interval_ms, mode, func)
   _timers[ref] = {mode, func}
 end

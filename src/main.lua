@@ -1,87 +1,121 @@
 
+require('scheduler')
 local CFG = require('config')
 
--- local function measure_temperature(dev_addr)
---   i2c.start(0)
---   i2c.address(0, dev_addr, i2c.RECEIVER)
---   c = i2c.read(0, 1)
---   i2c.stop(0)
---   return c
--- end
+-- Get 3-axis gyroscope readings.
+-- These gyroscope measurement registers, along with the accelerometer
+-- measurement registers, temperature measurement registers, and external sensor
+-- data registers, are composed of two sets of registers: an internal register
+-- set and a user-facing read register set.
+-- The data within the gyroscope sensors' internal register set is always
+-- updated at the Sample Rate. Meanwhile, the user-facing read register set
+-- duplicates the internal register set's data values whenever the serial
+-- interface is idle. This guarantees that a burst read of sensor registers will
+-- read measurements from the same sampling instant. Note that if burst reads
+-- are not used, the user is responsible for ensuring a set of single byte reads
+-- correspond to a single sampling instant by checking the Data Ready interrupt.
+--
+-- Each 16-bit gyroscope measurement has a full scale defined in FS_SEL
+-- (Register 27). For each full scale setting, the gyroscopes' sensitivity per
+-- LSB in GYRO_xOUT is shown in the table below:
+--
+-- FS_SEL | Full Scale Range   | LSB Sensitivity
+-- -------+--------------------+----------------
+-- 0      | +/- 250 degrees/s  | 131 LSB/deg/s
+-- 1      | +/- 500 degrees/s  | 65.5 LSB/deg/s
+-- 2      | +/- 1000 degrees/s | 32.8 LSB/deg/s
+-- 3      | +/- 2000 degrees/s | 16.4 LSB/deg/s
 
--- local function measure_angle(dev_addr)
---   -- Perform i2c config only on cold boot. If started from deep sleep, it should not be nessecary
---   i2c.start(0)
---   i2c.address(0, dev_addr, i2c.RECEIVER)
---   c = i2c.read(0, 1)
---   i2c.stop(0)
---   return c
--- end
+-- local sqrt = math.sqrt
+-- local atan2 = require('atan2')
+-- pitch = (atan2(y, sqrt(x * x + z * z)))
+-- roll = (atan2(x, sqrt(y * y + z * z)))
+-- Tilt = sqrt(pitch * pitch + roll * roll)
 
--- local function enable_wifi(timer_id)
+local ubidots
 
---   local ip = wifi.sta.getip()
+local function send_to_ubidots(jid, client, client_id)
+  local msg = receive()
 
---   if(ip==nil) then
---     print("Connecting...")
---   else
---    tmr.stop(timer_id)
---    print("Connected to AP!")
---    print(ip)
---       -- make a call with a voice message "your house is on fire"
---    -- make_call("15558976687","1334856679","Your house is on fire!")
---   end
+  if type(msg) == "table" then
+    msg = sjson.encode(msg)
+  elseif msg == "TIMEOUT!" then
+    return
+  end
 
--- end
+  client:publish("/v1.6/devices/"..client_id, msg, 0, 0)
 
--- luacheck: ignore 111
--- function main()
+  return send_to_ubidots(jid, client, client_id)
+end
 
-  wifi.eventmon.register(wifi.eventmon.STA_CONNECTED, function(ssid)
-    print("Wifi connected - from registered handler")
-    the_ssid = ssid
-  end)
+local function init_mqtt(jid)
+  local now, yield = tmr.now, coroutine.yield
+  local timeout_at = now() + 10000  -- ms
+  local mqtt_client, failed
+  local client_id = tostring(node.chipid())
+  local m = mqtt.Client(client_id, 120, CFG.token, "")
 
-  -- check IP here - we missed the Connected event
+  m:connect("things.ubidots.com", 1883, 0, 0,
+    function(client)
+      mqtt_client = client
+    end,
+    function(client, reason)
+      print(tostring(client).." failed with reason: "..reason)
+      failed = reason
+    end)
 
+  while timeout_at > now() do
+    yield()
+    if failed ~= nil then
+      return
+    end
+    if mqtt_client then
+      return send_to_ubidots(jid, mqtt_client, client_id)
+    end
+  end
+end
+
+local function init_wifi(jid)
+  local now, yield = tmr.now, coroutine.yield
+  local timeout_at = now() + 10000  -- 10s
+
+  wifi.sta.config {ssid=CFG.ssid, pwd=CFG.pwd}
+  wifi.sta.connect()
+
+  local getip = wifi.sta.getip
+
+  while timeout_at > now() do
+    yield()
+    if getip() then
+      return init_mqtt(jid)
+    end
+  end
+end
+
+local function sample_node()
+  if adc.force_init_mode(adc.INIT_VDD33) then
+    node.restart()
+    -- don't bother continuing, the restart is scheduled
+    return
+  end
+  send(ubidots, {voltage=adc.readvdd33(), starts=rtcmem.read32(0)})
+end
+
+local function sample_temp_gyro()
   local sda = 1
   local scl = 2
 
   -- initialize i2c, set pin1 as sda, set pin2 as scl
   i2c.setup(0, sda, scl, i2c.SLOW)
-
-  -- TODO: run coroutines from a single timer/alarm.
-  -- TODO: allow for a way to send messages to other coroutines
-  -- tmr.alarm(0, 0, tmr.ALARM_SINGLE, measure_temperature)
-  -- tmr.alarm(1, 0, tmr.ALARM_SINGLE, measure_angle)
-
-  wifi.sta.config {ssid=CFG.ssid, pwd=CFG.pwd}
-  wifi.sta.connect()
-  -- tmr.alarm(2, 1000, tmr.ALARM_AUTO, enable_wifi)
-  -- measure temperature2
-  -- measure angle
-  -- enable wifi
-  -- send message
-  -- node.dsleep(0)
--- end
-
--- luacheck: ignore 113
--- main()
-
-function send_to_ubidots()
-  local client_id=tostring(node.chipid())
-
-  m = mqtt.Client(client_id, 120, CFG.token, "")
-
-  m:on("connect", function(client) print ("connected") end)
-  m:on("offline", function(client) print ("offline") end)
-
-  m:connect("things.ubidots.com", 1883, 0, function(client)
-    print("connected")
-    client:publish("/v1.6/devices/"..client_id, '{"temperature": 18}', 0, 0, function(client) print("sent") end)
-
-  end,
-  function(client, reason)
-    print("failed reason: " .. reason)
-  end)
 end
+
+
+local function main()
+  ubidots = schedule(init_wifi)
+  schedule(sample_node)
+  schedule(sample_temp_gyro)
+
+  start()
+end
+
+main()

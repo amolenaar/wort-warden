@@ -8,7 +8,7 @@ local i2c = {
   SLOW="SLOW",
   TRANSMITTER="TRANSMITTER",
   RECEIVER="RECEIVER"
-} 
+}
 
 function i2c.setup(id, pinSDA, pinSCL, speed)
   assert(id == 0)

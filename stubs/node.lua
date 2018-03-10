@@ -1,4 +1,3 @@
-
 -- # Stub implementation for NodeMCU node module
 --
 -- https://nodemcu.readthedocs.io/en/master/en/modules/node/
@@ -8,6 +7,10 @@
 local stub = require 'luassert.stub'
 
 local node = {}
+
+function node.chipid()
+  return 1234
+end
 
 function node.bootreason()
   local ignore_me, extended_reset_cause = 0, 5

@@ -1,28 +1,17 @@
 
+require('stubs.bootstrap')
 
 describe("Once configured", function()
 
   setup(function()
-    require('stubs.bootstrap')
-    require('main')
-
   end)
 
-  it("should measure temperature", function()
+  it("perform a sampling cycle", function()
+    dofile('src/main.lua')
+    node.main_loop()
 
-  end)
-
-  it("should measure orientation", function()
-  end)
-
-  it("should measure system information", function()
-  end)
-
-  it("should send measurements over MQTT", function()
-  end)
-
-  it("should perform a deep sleep when done", function()
-
+    assert.are.equal(1, #mqtt.messages_sent())
+    assert.are.equal('{"starts": 1, "voltage": 3300}', mqtt.messages_sent()[1])
     -- assert.stub(node.dsleep).was_called_with(0)
   end)
 
