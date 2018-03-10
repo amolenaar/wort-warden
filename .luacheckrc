@@ -4,9 +4,10 @@ globals = {
   "file",
   "i2c",
   "tmr",
-  "wifi"
-}
-
-files["src/scheduler.lua"].ignore = {
-  "431" -- shadowing upvalue
+  "wifi",
+  -- from scheduler.lua:
+  "schedule",
+  "start",
+  "send",
+  "receive"
 }

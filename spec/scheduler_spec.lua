@@ -29,7 +29,7 @@ describe("The scheduler", function()
     end)
 
     start()
-    tmr.run_all_timers()
+    node.main_loop()
 
     assert.are.equal("been there", value)
   end)
@@ -48,7 +48,7 @@ describe("The scheduler", function()
     end)
 
     start()
-    tmr.run_all_timers()
+    node.main_loop()
 
     assert.are.equal("been there", value)
   end)
@@ -64,13 +64,13 @@ describe("Scheduled routines", function()
 
     local consumer = schedule(function()
       while not value do
-        value = coroutine.yield()
+        value = receive()
       end
     end)
 
     -- producer
     schedule(function()
-      coroutine.yield(consumer, "been there")
+      send(consumer, "been there")
     end)
 
     start()
@@ -85,11 +85,11 @@ describe("Scheduled routines", function()
 
     outer = schedule(function()
       local inner = schedule(function()
-        coroutine.yield(outer, "been there")
+        send(outer, "been there")
       end)
 
       while not value do
-        value = coroutine.yield()
+        value = receive()
       end
     end)
 
@@ -97,6 +97,21 @@ describe("Scheduled routines", function()
     node.main_loop()
 
     assert.are.equal("been there", value)
+  end)
+
+  it("should receive a timeout if no messages are to be received", function()
+    local value
+
+    local consumer = schedule(function()
+      while not value do
+        value = receive()
+      end
+    end)
+
+    start()
+    node.main_loop()
+
+    assert.are.equal("TIMEOUT!", value)
   end)
 
 end)

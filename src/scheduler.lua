@@ -19,33 +19,27 @@ local function qpop(q)
 end
 
 local job_list = {}
-local job_id = 0
+local next_job_id = 1
+local job_id = nil
+local yield = coroutine.yield
 
--- luacheck: ignore 111
 function schedule(func)
-  job_id = job_id + 1
-  job_list[job_id] = {coroutine.create(func), qnew()}
-  return job_id
+  local jid = next_job_id
+  job_list[jid] = {coroutine.create(func), qnew()}
+  next_job_id = next_job_id + 1
+  return jid
 end
 
--- send_receive = coroutine.yield
-
--- luacheck: ignore 111
 function start()
   local loop = coroutine.create(function()
-    local job_list, next = job_list, next
-    local yield, resume, status = coroutine.yield, coroutine.resume, coroutine.status
-    local qpush, qpop = qpush, qpop
-    local st, dp, dm
+    local next = next
+    local resume, status = coroutine.resume, coroutine.status
+    local st
     while next(job_list) ~= nil do
       for id, aq in pairs(job_list) do
-        st, dp, dm = resume(aq[1], qpop(aq[2]))
-        if dp and dm ~= nil then
-          local tg = job_list[dp]
-          if tg then
-            qpush(tg[2], dm)
-          end
-        end
+        job_id = id
+        st = resume(aq[1], id)
+        job_id = nil
         if not st or status(aq[1]) == "dead" then
           job_list[id] = nil
         end
@@ -55,10 +49,30 @@ function start()
   end)
 
   local resume = coroutine.resume
-  -- Use node.task.post instead
-  tmr.alarm(1, 0, tmr.ALARM_AUTO, function(timer_id)
+  -- Put a 10ms interval here, to avoid busy waiting
+  tmr.alarm(1, 10, tmr.ALARM_AUTO, function(timer_id)
     if not resume(loop) then
       tmr.deregister(timer_id)
     end
   end)
+end
+
+function send(jid, msg)
+  qpush(job_list[jid][2], msg)
+end
+
+-- Receive data. timeout is counted in cycles. One cycle is roughly 10ms
+-- Return a message, or "TIMEOUT!" if the timeout has been reached
+function receive(timeout)
+  if timeout == nil then timeout = 99 end
+  local q = job_list[job_id][2]
+  while timeout > 0 do
+    local msg = qpop(q)
+    if msg ~= nil then
+      return msg
+    end
+    timeout = timeout - 1
+    yield()
+  end
+  return "TIMEOUT!"
 end

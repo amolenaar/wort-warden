@@ -19,6 +19,7 @@ end
 
 stub(node, "dsleep")
 
+-- Simulate the NodeMCU main loop
 function node.main_loop()
   tmr.run_all_timers()
 end
