@@ -56,7 +56,7 @@ lint:		## Check file validity
 test:		## Run unit tests
 	$(ROCKS_PATH)/bin/busted -v spec
 
-upload: test .uploads/init .uploads/main .uploads/atan2 .uploads/config	## Upload modified files to the ESP8266
+upload: lint test .uploads/init .uploads/main .uploads/scheduler .uploads/atan2 .uploads/config	## Upload modified files to the ESP8266
 
 .uploads:
 	mkdir -p .uploads
