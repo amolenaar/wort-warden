@@ -18,6 +18,11 @@ end
 
 function Client:connect(host, port, secure, autoreconnect, on_connect, on_error)
   on_connect(self)
+  -- print("MQTT client connected")
+end
+
+function Client:close()
+  -- print("MQTT client closed")
 end
 
 function Client:publish(topic, payload, qos, retain, on_sent)

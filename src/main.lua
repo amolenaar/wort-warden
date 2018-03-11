@@ -44,6 +44,8 @@ local function send_to_ubidots(jid, client, client_id)
     return
   end
 
+  print("- Publishing:")
+  print(msg)
   client:publish("/v1.6/devices/"..client_id, msg, 0, 0)
 
   return send_to_ubidots(jid, client, client_id)
@@ -74,7 +76,6 @@ local function init_mqtt(jid)
       return send_to_ubidots(jid, mqtt_client, client_id)
     end
   end
-  print('MQTT init failed')
 end
 
 local function init_wifi(jid)
@@ -96,8 +97,8 @@ end
 
 local function sample_node()
   if adc.force_init_mode(adc.INIT_VDD33) then
-    node.restart()
     -- don't bother continuing, the restart is scheduled
+    node.restart()
     return
   end
   local br1, br2 = node.bootreason()
@@ -112,17 +113,12 @@ local function sample_temp_gyro()
   i2c.setup(0, sda, scl, i2c.SLOW)
 end
 
-local function main()
+local function main(on_finished)
   ubidots = schedule(init_wifi)
   schedule(sample_node)
   schedule(sample_temp_gyro)
 
-  start()
-
-  -- rtcmem.write32(0, 0)
-  node.dsleep(9000000) -- 900s, 15 min
-  -- node.dsleep(1800000000) -- 1800s, 30 min
+  start(on_finished)
 end
 
 return main
--- main()
