@@ -36,7 +36,7 @@ function schedule(func)
   return jid
 end
 
-function start()
+function start(on_finished)
   local loop = coroutine.create(function()
     local next = next
     local resume, status = coroutine.resume, coroutine.status
@@ -62,6 +62,7 @@ function start()
   tmr.alarm(1, 10, tmr.ALARM_AUTO, function(timer_id)
     if not resume(loop) then
       tmr.unregister(timer_id)
+      if on_finished then on_finished() end
     end
   end)
 end

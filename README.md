@@ -23,10 +23,12 @@ I hope the installation process will be simpler as well, but that remains to be 
 
 Backlog:
 
-- [ ] Set up development environment
-- [ ] Deploy minimal app to Wemos board
-- [ ] Test WIFI, I2C, deep sleep
-- [ ] Disable unused modules in `app/include/user_modules.h`
+- [x] Set up development environment
+- [x] Deploy minimal app to Wemos board
+- [x] Test WIFI, deep sleep
+- [ ] Test I2C
+- [ ] Create a toggle to start into dev mode
+- [x] Disable unused modules in `app/include/user_modules.h`
 - [ ] Build everything into the PETling tube - use foamboard for starters
 - [ ] Calibrate vessel
 - [ ] Should the i2c device be connected to vdd or to a pin, so it can be really shut off.

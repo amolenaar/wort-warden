@@ -8,4 +8,14 @@ else
   rtcmem.write32(0, starts + 1)
 end
 
-require('main')()
+gpio.mode(4, gpio.INPUT)
+local dev_mode = gpio.read(4)
+
+if dev_mode == 0 then
+  print("In dev mode, awaiting user input")
+else
+  print("In prod mode")
+  require('main')(function()
+      node.dsleep(10000000, 2) -- 10s
+    end)
+end

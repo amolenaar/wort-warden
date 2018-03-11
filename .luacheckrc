@@ -3,6 +3,7 @@ globals = {
   "nil",
   "node",
   "file",
+  "gpio",
   "i2c",
   "mqtt",
   "rtcmem",
