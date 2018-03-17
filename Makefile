@@ -22,8 +22,8 @@ dev: env-check python-deps lua-deps	## Set up your development environment, Lua 
 
 env-check:
 	@which luarocks >&- || { echo "Luarocks not found. Please install Lua before proceeding" && exit 1; }
-	@which python >&- || { echo "Python not found. Please install Python before proceeding" && exit 1; }
-	@echo "Lua and Python have been found. Let's continue."
+	@which python3 >&- || { echo "Python 3.x not found. Please install Python 3 before proceeding" && exit 1; }
+	@echo "Lua and Python 3 have been found. Let's continue."
 
 lua-deps:
 	@for rock in $(DEV_ROCKS) ; do \
@@ -35,16 +35,11 @@ lua-deps:
           fi \
         done;
 
-python-deps: .python-env
-	@.python-env/bin/pip install nodemcu-uploader esptool
+python-deps: .python3-venv
+	@.python3-venv/bin/pip3 install nodemcu-uploader esptool
 
-.python-env:
-	@if virtualenv --version > /dev/null ; then \
-	  virtualenv .python-env ; \
-	else \
-	  echo "I will try to install Virtualenv globally, your password may be required" ; \
-	  sudo pip install virtualenv && virtualenv .python-env ; \
-	fi
+.python3-venv:
+	python3 -m venv .python3-venv
 
 ##
 ## The application
@@ -62,22 +57,26 @@ upload: lint test .uploads/init .uploads/main .uploads/scheduler .uploads/atan2 
 	mkdir -p .uploads
 
 .uploads/%:  src/%.lua .uploads
-	cd src && ../.python-env/bin/nodemcu-uploader --port $(SERIAL_PORT) --baud 115200 upload --compile $$(basename $<) && touch ../$@
+	cd src && ../.python3-venv/bin/nodemcu-uploader --port $(SERIAL_PORT) --baud 115200 upload --compile $$(basename $<) && touch ../$@
 	@sleep 1
 
 ##
 ## Firmware
 ##
 
-firmware: nodemcu-firmware/bin/nodemcu_integer_wort-warden.bin	## Build the firmware image
+FIRMWARE_IMAGE=nodemcu-firmware/bin/nodemcu_integer_wort-warden.bin
 
-flash: nodemcu-firmware/bin/nodemcu_integer_wort-warden.bin	## Flash ESP8266 with firmware image
-	.python-env/bin/esptool.py --port $(SERIAL_PORT) write_flash 0x00000 nodemcu-firmware/bin/nodemcu_integer_wort-warden.bin
+firmware: $(FIRMWARE_IMAGE)	## Build the firmware image
 
-nodemcu-firmware/bin/nodemcu_integer_wort-warden.bin: nodemcu-firmware nodemcu-firmware/app/include/user_modules.h
+flash: $(FIRMWARE_IMAGE)	## Flash ESP8266 with firmware image
+	.python3-venv/bin/esptool.py --port $(SERIAL_PORT) write_flash 0x00000 $(FIRMWARE_IMAGE)
+
+$(FIRMWARE_IMAGE): nodemcu-firmware nodemcu-firmware/app/include/user_modules.h
 	docker run --rm -ti -e IMAGE_NAME=wort-warden -v $(PWD)/nodemcu-firmware:/opt/nodemcu-firmware marcelstoer/nodemcu-build
 
-nodemcu-firmware:	## Clone the firmware repository
+nodemcu-firmware: nodemcu-firmware/Makefile	## Clone the firmware repository
+
+nodemcu-firmware/Makefile: # Refer to a file, since the directory timestamp changes all the time
 	git clone git@github.com:nodemcu/nodemcu-firmware.git
 	@sleep 1 # Ensure user_modules.h becomes newer than the checked out file
 	touch include/user_modules.h
@@ -92,10 +91,10 @@ tty:	## Open a TTY (screen) session with the ESP8266
 	screen $(SERIAL_PORT) 115200
 
 list:	## List all files on the ESP8266
-	.python-env/bin/nodemcu-uploader --port $(SERIAL_PORT) --baud 115200 file list
+	.python3-venv/bin/nodemcu-uploader --port $(SERIAL_PORT) --baud 115200 file list
 
 format:	## Format the flash storage on the ESP8266
-	.python-env/bin/nodemcu-uploader --port $(SERIAL_PORT) --baud 115200 file format
+	.python3-venv/bin/nodemcu-uploader --port $(SERIAL_PORT) --baud 115200 file format
 	rm  .uploads/*
 
 .PHONY: help all dev lua-deps python-deps lint test upload firmware flash

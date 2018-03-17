@@ -1,6 +1,7 @@
 src/config.lua
 nodemcu-firmware/
 .python-env/
+.python3-venv/
 .uploads/
 .vscode/
 *.swp
