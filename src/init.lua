@@ -8,8 +8,8 @@ else
   rtcmem.write32(0, starts + 1)
 end
 
-gpio.mode(4, gpio.INPUT)
-local dev_mode = gpio.read(4)
+-- gpio.mode(4, gpio.INPUT, gpio.PULLUP)
+local dev_mode = 0 --gpio.read(4)
 
 if dev_mode == 0 then
   print("In dev mode, awaiting user input")
