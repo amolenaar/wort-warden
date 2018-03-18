@@ -1,5 +1,6 @@
 globals = {
   "adc",
+  "bit",
   "nil",
   "node",
   "file",
