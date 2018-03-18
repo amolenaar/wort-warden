@@ -71,8 +71,8 @@ firmware: $(FIRMWARE_IMAGE)	## Build the firmware image
 flash: $(FIRMWARE_IMAGE)	## Flash ESP8266 with firmware image
 	.python3-venv/bin/esptool.py --port $(SERIAL_PORT) write_flash 0x00000 $(FIRMWARE_IMAGE)
 
-$(FIRMWARE_IMAGE): nodemcu-firmware nodemcu-firmware/app/include/user_modules.h
-	docker run --rm -ti -e IMAGE_NAME=wort-warden -v $(PWD)/nodemcu-firmware:/opt/nodemcu-firmware marcelstoer/nodemcu-build
+$(FIRMWARE_IMAGE): nodemcu-firmware/Makefile nodemcu-firmware/app/include/user_modules.h
+	docker run --rm -i -e INTEGER_ONLY=1 -e IMAGE_NAME=wort-warden -v $(PWD)/nodemcu-firmware:/opt/nodemcu-firmware marcelstoer/nodemcu-build
 
 nodemcu-firmware: nodemcu-firmware/Makefile	## Clone the firmware repository
 
