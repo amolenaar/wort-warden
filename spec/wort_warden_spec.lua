@@ -11,7 +11,7 @@ describe("Once configured", function()
     node.main_loop()
 
     assert.are.equal(1, #mqtt.messages_sent())
-    assert.are.equal('{"bootreason": 5, "starts": 1, "voltage": 3300}', mqtt.messages_sent()[1])
+    assert.are.equal('{"bootreason": 5, "starts": 1, "uptime": 4, "voltage": 3300}', mqtt.messages_sent()[1])
     -- assert.stub(node.dsleep).was_called_with(0)
   end)
 

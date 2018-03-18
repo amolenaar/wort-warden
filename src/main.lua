@@ -95,6 +95,94 @@ local function init_wifi(jid)
   end
 end
 
+
+local function i2c_write(dev_addr, reg_addr, data)
+  i2c.start(0)
+  if i2c.address(0, dev_addr, i2c.TRANSMITTER) then
+      i2c.write(0, reg_addr)
+      i2c.write(0, data)
+      i2c.stop(0)
+  else
+      print("I2C write fails")
+  end
+end
+
+local function i2c_read(dev_addr, reg_addr, bytes_to_read)
+  local response = 0;
+  i2c.start(0)
+  if i2c.address(0, dev_addr, i2c.TRANSMITTER) then
+      i2c.write(0, reg_addr)
+      -- i2c.stop(0)
+      i2c.start(0)
+      i2c.address(0, dev_addr, i2c.RECEIVER)
+      response = i2c.read(0, bytes_to_read)
+      i2c.stop(0)
+      return response
+  else
+      print("I2C read fails")
+  end
+  return response
+end
+
+local function init_mpu6050(dev_addr)
+  local USER_CTRL    =  0x6A
+  local SMPLRT_DIV   =  0x19
+  local PWR_MGMT_1   =  0x6B
+  local PWR_MGMT_2   =  0x6C
+  local CONFIG       =  0x1A
+  -- local GYRO_CONFIG  =  0x1B
+  local ACCEL_CONFIG =  0x1C
+  local FIFO_EN      =  0x23
+  local INT_ENABLE   =  0x38
+  local SIGNAL_PATH_RESET  = 0x68
+
+  i2c_write(dev_addr, SMPLRT_DIV, 0x07)
+  i2c_write(dev_addr, PWR_MGMT_1, 0x01)
+  i2c_write(dev_addr, PWR_MGMT_2, 0x07) -- Gyroscope in standby mode
+  i2c_write(dev_addr, CONFIG, 0x00)
+  -- i2c_write(dev_addr, GYRO_CONFIG, 0x00) -- set +/-500 degree/second full scale
+  i2c_write(dev_addr, ACCEL_CONFIG, 0x00) -- set +/- 2g full scale
+  i2c_write(dev_addr, FIFO_EN, 0x00)
+  i2c_write(dev_addr, INT_ENABLE, 0x01)
+  i2c_write(dev_addr, SIGNAL_PATH_RESET, 0x00)
+  i2c_write(dev_addr, USER_CTRL, 0x00)
+end
+
+local function read_accel_temp(dev_addr)
+  local bor, lshift, byte = bit.bor, bit.lshift, string.byte
+  local ACCEL_XOUT_H =  0x3B
+  local to_signed_16bit = function (num)   -- convert unsigned 16-bit no. to signed 16-bit no.
+    if num > 32768 then
+        num = num - 65536
+    end
+    return num
+  end
+
+  local data = i2c_read(dev_addr, ACCEL_XOUT_H, 8)
+
+  local ax = to_signed_16bit(bor(lshift(byte(data, 1), 8), byte(data, 2)))
+  local ay = to_signed_16bit(bor(lshift(byte(data, 3), 8), byte(data, 4)))
+  local az = to_signed_16bit(bor(lshift(byte(data, 5), 8), byte(data, 6)))
+  local t  = to_signed_16bit(bor(lshift(byte(data, 7), 8), byte(data, 8)))
+
+  return ax / 1638, ay / 1638, az / 1638, t / 34 + 365
+end
+
+local function sample_accel_temp()
+  local sda = 3
+  local scl = 4
+  local dev_addr = 0x68
+
+  -- initialize i2c, set pin1 as sda, set pin2 as scl
+  i2c.setup(0, sda, scl, i2c.SLOW)
+  init_mpu6050(dev_addr)
+
+  local ax, ay, az, t = read_accel_temp(dev_addr)
+
+  -- send(ubidots, {accel_x=ax, accel_y=ay, accel_z=az, temperature=t})
+  return {accel_x=ax, accel_y=ay, accel_z=az, temperature=t}
+end
+
 local function sample_node()
   if adc.force_init_mode(adc.INIT_VDD33) then
     -- don't bother continuing, the restart is scheduled
@@ -102,21 +190,13 @@ local function sample_node()
     return
   end
   local br1, br2 = node.bootreason()
-  send(ubidots, {voltage=adc.readvdd33(), starts=rtcmem.read32(0), bootreason=br1*100 + br2})
-end
-
-local function sample_temp_gyro()
-  local sda = 1
-  local scl = 2
-
-  -- initialize i2c, set pin1 as sda, set pin2 as scl
-  i2c.setup(0, sda, scl, i2c.SLOW)
+  send(ubidots, {voltage=adc.readvdd33(), starts=rtcmem.read32(0), bootreason=br1*100 + br2, uptime=tmr.now()})
 end
 
 local function main(on_finished)
   ubidots = schedule(init_wifi)
+  schedule(sample_accel_temp)
   schedule(sample_node)
-  schedule(sample_temp_gyro)
 
   start(on_finished)
 end
