@@ -1,4 +1,6 @@
 -- Fast XY vector to integer degree algorithm - Jan 2011 www.RomanBlack.com
+-- https://www.romanblack.com/integer_degree.htm
+--
 -- Converts any XY values including 0 to a degree value that should be
 -- within +/- 1 degree of the accurate value without needing
 -- large slow trig functions like ArcTan() or ArcCos().
@@ -6,6 +8,7 @@
 -- the angle in integer degrees from 0-360.
 -- Any values of X and Y are usable including negative values provided
 -- they are between -47721858 and 47721858 so the 32 bit multiply does not overflow.
+
 local function atan2(x, y)
   if x == 0 and y == 0 then return 0 end
 
