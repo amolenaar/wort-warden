@@ -1,6 +1,8 @@
 
 
 local _, boot = node.bootreason()
+print("boot reason: "..tostring(boot))
+
 if boot == 6 then
   rtcmem.write32(0, 1)
 else
