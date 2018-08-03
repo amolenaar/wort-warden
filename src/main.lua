@@ -156,7 +156,7 @@ end
 local function read_accel_temp(dev_addr)
   local bor, lshift, byte = bit.bor, bit.lshift, string.byte
   local ACCEL_XOUT_H =  0x3B
-  local to_signed_16bit = function (num)   -- convert unsigned 16-bit no. to signed 16-bit no.
+  local to_signed_16bit = function (num)   -- convert unsigned 16-bit to signed 16-bit
     if num > 32768 then
         num = num - 65536
     end
