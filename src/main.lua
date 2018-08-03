@@ -44,14 +44,16 @@ local function send_to_ubidots(jid, client, client_id)
     return
   end
 
-  print("- Publishing:")
-  print(msg)
-  client:publish("/v1.6/devices/"..client_id, msg, 0, 0)
+  print("Send: "..msg)
+  client:publish("/v1.6/devices/"..client_id, msg, 0, 0, function ()
+    print('Send: <ack>')
+  end)
 
   return send_to_ubidots(jid, client, client_id)
 end
 
 local function init_mqtt(jid)
+  print('MQTT: ...')
   local now, yield = tmr.now, coroutine.yield
   local timeout_at = now() + 10000000 -- 10s
   local mqtt_client, failed
@@ -60,6 +62,7 @@ local function init_mqtt(jid)
 
   m:connect("things.ubidots.com", 1883, 0, 0,
     function(client)
+      print('MQTT: up')
       mqtt_client = client
     end,
     function(client, reason)
@@ -79,6 +82,7 @@ local function init_mqtt(jid)
 end
 
 local function init_wifi(jid)
+  print('WIFI: ...')
   local now, yield = tmr.now, coroutine.yield
   local timeout_at = now() + 10000000  -- 10s
 
@@ -90,6 +94,7 @@ local function init_wifi(jid)
   while timeout_at > now() do
     yield()
     if getip() then
+      print('WIFI: up')
       return init_mqtt(jid)
     end
   end

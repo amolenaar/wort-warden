@@ -68,7 +68,7 @@ FIRMWARE_IMAGE=nodemcu-firmware/bin/nodemcu_integer_wort-warden.bin
 
 firmware: $(FIRMWARE_IMAGE)	## Build the firmware image
 
-flash: $(FIRMWARE_IMAGE)	## Flash ESP8266 with firmware image
+flash: $(FIRMWARE_IMAGE)	## Flash ESP8266 with firmware image, make sure D3 (GPIO0) is pulled low
 	.python3-venv/bin/esptool.py --port $(SERIAL_PORT) write_flash 0x00000 $(FIRMWARE_IMAGE)
 
 $(FIRMWARE_IMAGE): nodemcu-firmware/Makefile nodemcu-firmware/app/include/user_modules.h
