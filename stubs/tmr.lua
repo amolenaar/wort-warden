@@ -18,6 +18,10 @@ function tmr.now()
   return _now
 end
 
+function tmr.delay(interval_us)
+  -- noop
+end
+
 function tmr.alarm(ref, interval_ms, mode, func)
   _timers[ref] = {mode, func}
 end

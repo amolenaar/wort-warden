@@ -67,6 +67,13 @@ function start(on_finished)
   end)
 end
 
+function wait(ms)
+  while ms > 0 do
+    yield()
+    ms = ms - 10
+  end
+end
+
 function send(jid, msg)
   if job_list[jid] then
     qpush(job_list[jid][2], msg)

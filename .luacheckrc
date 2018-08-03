@@ -15,5 +15,6 @@ globals = {
   "schedule",
   "start",
   "send",
-  "receive"
+  "receive",
+  "wait"
 }

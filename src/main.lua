@@ -100,7 +100,6 @@ local function init_wifi(jid)
   end
 end
 
-
 local function i2c_write(dev_addr, reg_addr, data)
   i2c.start(0)
   if i2c.address(0, dev_addr, i2c.TRANSMITTER) then
@@ -117,7 +116,7 @@ local function i2c_read(dev_addr, reg_addr, bytes_to_read)
   i2c.start(0)
   if i2c.address(0, dev_addr, i2c.TRANSMITTER) then
       i2c.write(0, reg_addr)
-      -- i2c.stop(0)
+      i2c.stop(0)
       i2c.start(0)
       i2c.address(0, dev_addr, i2c.RECEIVER)
       response = i2c.read(0, bytes_to_read)
@@ -153,15 +152,17 @@ local function init_mpu6050(dev_addr)
   i2c_write(dev_addr, USER_CTRL, 0x00)
 end
 
+local function to_signed_16bit(num)
+  -- convert unsigned 16-bit to signed 16-bit
+  if num > 32768 then
+      num = num - 65536
+  end
+  return num
+end
+
 local function read_accel_temp(dev_addr)
   local bor, lshift, byte = bit.bor, bit.lshift, string.byte
   local ACCEL_XOUT_H =  0x3B
-  local to_signed_16bit = function (num)   -- convert unsigned 16-bit to signed 16-bit
-    if num > 32768 then
-        num = num - 65536
-    end
-    return num
-  end
 
   local data = i2c_read(dev_addr, ACCEL_XOUT_H, 8)
 
@@ -177,16 +178,17 @@ local function init_i2c()
     -- initialize i2c, set pin1 as sda, set pin2 as scl
     i2c.setup(0, CFG.sda, CFG.scl, i2c.SLOW)
 
-    tmr.delay(150000)
+    wait(150)
 
     init_mpu6050(CFG.mpu6050_addr)
 end
 
 local function sample_accel_temp()
+  init_i2c()
+
   local ax, ay, az, t = read_accel_temp(CFG.mpu6050_addr)
 
-  -- send(ubidots, {accel_x=ax, accel_y=ay, accel_z=az, temperature=t})
-  return {accel_x=ax, accel_y=ay, accel_z=az, temperature=t}
+  send(ubidots, {accel_x=ax, accel_y=ay, accel_z=az, temperature=t})
 end
 
 local function sample_node()
@@ -200,7 +202,6 @@ local function sample_node()
 end
 
 local function main(on_finished)
-  init_i2c()
 
   ubidots = schedule(init_wifi)
   schedule(sample_accel_temp)

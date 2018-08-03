@@ -2,6 +2,7 @@
 
 node   = require('stubs.node')
 adc    = require('stubs.adc')
+bit    = require('bit32')
 file   = require('stubs.file')
 i2c    = require('stubs.i2c')
 mqtt   = require('stubs.mqtt')

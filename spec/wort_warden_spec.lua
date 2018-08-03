@@ -10,8 +10,9 @@ describe("Once configured", function()
     dofile('src/main.lua')()
     node.main_loop()
 
-    assert.are.equal(1, #mqtt.messages_sent())
+    assert.are.equal(2, #mqtt.messages_sent())
     assert.are.equal('{"bootreason": 5, "starts": 1, "uptime": 4, "voltage": 3300}', mqtt.messages_sent()[1])
+    assert.are.equal('{"accel_x": 0, "accel_y": 0, "accel_z": 0, "temperature": 365}', mqtt.messages_sent()[2])
     -- assert.stub(node.dsleep).was_called_with(0)
   end)
 

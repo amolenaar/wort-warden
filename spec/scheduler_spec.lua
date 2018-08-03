@@ -47,10 +47,18 @@ describe("The scheduler", function()
       value = value.."there"
     end)
 
+    schedule(function()
+      coroutine.yield()
+      coroutine.yield()
+      value = value.." "
+      coroutine.yield()
+      value = value.."again"
+    end)
+
     start()
     node.main_loop()
 
-    assert.are.equal("been there", value)
+    assert.are.equal("been there again", value)
   end)
 
 end)

@@ -20,9 +20,17 @@ end
 
 function i2c.address(id, device_addr, direction)
   assert(id == 0)
+  return direction == i2c.TRANSMITTER -- allow to write
 end
 
 function i2c.read(id, len)
+  assert(id == 0)
+  assert(len == 8)
+
+  return "12345678"
+end
+
+function i2c.write(id, data)
   assert(id == 0)
 end
 
