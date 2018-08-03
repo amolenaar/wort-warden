@@ -173,16 +173,17 @@ local function read_accel_temp(dev_addr)
   return ax / 1638, ay / 1638, az / 1638, t / 34 + 365
 end
 
+local function init_i2c()
+    -- initialize i2c, set pin1 as sda, set pin2 as scl
+    i2c.setup(0, CFG.sda, CFG.scl, i2c.SLOW)
+
+    tmr.delay(150000)
+
+    init_mpu6050(CFG.mpu6050_addr)
+end
+
 local function sample_accel_temp()
-  local sda = 3
-  local scl = 4
-  local dev_addr = 0x68
-
-  -- initialize i2c, set pin1 as sda, set pin2 as scl
-  i2c.setup(0, sda, scl, i2c.SLOW)
-  init_mpu6050(dev_addr)
-
-  local ax, ay, az, t = read_accel_temp(dev_addr)
+  local ax, ay, az, t = read_accel_temp(CFG.mpu6050_addr)
 
   -- send(ubidots, {accel_x=ax, accel_y=ay, accel_z=az, temperature=t})
   return {accel_x=ax, accel_y=ay, accel_z=az, temperature=t}
@@ -199,6 +200,8 @@ local function sample_node()
 end
 
 local function main(on_finished)
+  init_i2c()
+
   ubidots = schedule(init_wifi)
   schedule(sample_accel_temp)
   schedule(sample_node)
