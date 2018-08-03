@@ -91,8 +91,8 @@ while true do   --read and print accelero, gyro and temperature value
     AccelX = AccelX/AccelScaleFactor   -- divide each with their sensitivity scale factor
     AccelY = AccelY/AccelScaleFactor
     AccelZ = AccelZ/AccelScaleFactor
-    Temperature = Temperature/340+36.53-- temperature formula
-    -- Temperature = Temperature/3+3653-- temperature formula temp in 0.01 deg
+    -- Temperature = Temperature/340+36.53 -- temperature formula
+    Temperature = Temperature/34+365 -- temperature formula temp in 0.1 deg
     GyroX = GyroX/GyroScaleFactor
     GyroY = GyroY/GyroScaleFactor
     GyroZ = GyroZ/GyroScaleFactor
@@ -105,7 +105,7 @@ while true do   --read and print accelero, gyro and temperature value
     local roll = (atan2(x, sqrt(y * y + z * z)))
     local Tilt = sqrt(pitch * pitch + roll * roll)
 
-    print(string.format("Ax:%6d Ay:%6d Az:%6d T:%3.3g  Gx:%6d Gy:%6d Gz:%6d Tilt:%3d",
+    print(string.format("Ax:%6d Ay:%6d Az:%6d T:%6d  Gx:%6d Gy:%6d Gz:%6d Tilt:%3d",
                         AccelX, AccelY, AccelZ, Temperature, GyroX, GyroY, GyroZ, Tilt))
     -- print(string.format("Ax:%.3g Ay:%.3g Az:%.3g T:%.3g Gx:%.3g Gy:%.3g Gz:%.3g  Tilt:%.3g",
     --                     AccelX, AccelY, AccelZ, Temperature, GyroX, GyroY, GyroZ, Tilt))
