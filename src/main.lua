@@ -34,7 +34,57 @@ local CFG = require('config')
 
 local ubidots
 
-local function send_to_ubidots(jid, client, client_id)
+-- Networking
+
+local function init_wifi()
+  print('WIFI: ...')
+  local now, yield = tmr.now, coroutine.yield
+  local timeout_at = now() + 10000000  -- 10s
+
+  wifi.sta.config {ssid=CFG.ssid, pwd=CFG.pwd}
+  wifi.sta.connect()
+
+  local getip = wifi.sta.getip
+
+  while timeout_at > now() do
+    yield()
+    if getip() then
+      print('WIFI: up')
+      return true
+    end
+  end
+  print('WIFI: down')
+end
+
+local function init_mqtt(client_id)
+  print('MQTT: ...')
+  local now, yield = tmr.now, coroutine.yield
+  local timeout_at = now() + 10000000 -- 10s
+  local mqtt_client, failed
+  local m = mqtt.Client(client_id, 120, CFG.token, "")
+
+  m:connect("things.ubidots.com", 1883, 0, 0,
+    function(client)
+      print('MQTT: up')
+      mqtt_client = client
+    end,
+    function(client, reason)
+      print('MQTT: '..tostring(client).." failed, "..reason)
+      failed = reason
+    end)
+
+  while timeout_at > now() do
+    yield()
+    if failed ~= nil then
+      return
+    end
+    if mqtt_client then
+      return mqtt_client --send_to_ubidots(jid, mqtt_client, client_id)
+    end
+  end
+end
+
+local function send_to_ubidots(client, client_id)
   local msg = receive()
 
   if type(msg) == "table" then
@@ -49,56 +99,20 @@ local function send_to_ubidots(jid, client, client_id)
     print('Send: <ack>')
   end)
 
-  return send_to_ubidots(jid, client, client_id)
+  return send_to_ubidots(client, client_id)
 end
 
-local function init_mqtt(jid)
-  print('MQTT: ...')
-  local now, yield = tmr.now, coroutine.yield
-  local timeout_at = now() + 10000000 -- 10s
-  local mqtt_client, failed
-  local client_id = tostring(node.chipid())
-  local m = mqtt.Client(client_id, 120, CFG.token, "")
-
-  m:connect("things.ubidots.com", 1883, 0, 0,
-    function(client)
-      print('MQTT: up')
-      mqtt_client = client
-    end,
-    function(client, reason)
-      print(tostring(client).." failed with reason: "..reason)
-      failed = reason
-    end)
-
-  while timeout_at > now() do
-    yield()
-    if failed ~= nil then
-      return
-    end
-    if mqtt_client then
-      return send_to_ubidots(jid, mqtt_client, client_id)
+local function sender()
+  if init_wifi() then
+    local client_id = tostring(node.chipid())
+    local client = init_mqtt(client_id)
+    if client then
+      send_to_ubidots(client, client_id)
     end
   end
 end
 
-local function init_wifi(jid)
-  print('WIFI: ...')
-  local now, yield = tmr.now, coroutine.yield
-  local timeout_at = now() + 10000000  -- 10s
-
-  wifi.sta.config {ssid=CFG.ssid, pwd=CFG.pwd}
-  wifi.sta.connect()
-
-  local getip = wifi.sta.getip
-
-  while timeout_at > now() do
-    yield()
-    if getip() then
-      print('WIFI: up')
-      return init_mqtt(jid)
-    end
-  end
-end
+-- I2C / GY-521
 
 local function i2c_write(dev_addr, reg_addr, data)
   i2c.start(0)
@@ -199,6 +213,8 @@ local function sample_accel_temp()
   send(ubidots, {accel_x=ax, accel_y=ay, accel_z=az, temperature=t, tilt=tilt(ax, ay,az)})
 end
 
+-- Sample diagnostics info
+
 local function sample_node()
   if adc.force_init_mode(adc.INIT_VDD33) then
     -- don't bother continuing, the restart is scheduled
@@ -211,7 +227,7 @@ end
 
 local function main(on_finished)
 
-  ubidots = schedule(init_wifi)
+  ubidots = schedule(sender)
   schedule(sample_accel_temp)
   schedule(sample_node)
 
