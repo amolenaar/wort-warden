@@ -17,6 +17,10 @@ local dev_mode = (boot == 6)
 
 if dev_mode then
   print("In dev mode, awaiting user input")
+  print("Call 'reboot()' to restore normal operation")
+  function reboot()
+    node.dsleep(1000000, 2) -- 1s
+  end
 else
   print("In prod mode")
   require('main')(function()

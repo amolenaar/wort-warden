@@ -11,6 +11,8 @@ globals = {
   "sjson",
   "tmr",
   "wifi",
+  -- from init.lua:
+  "reboot",
   -- from scheduler.lua:
   "schedule",
   "start",
