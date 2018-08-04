@@ -161,7 +161,7 @@ local function to_signed_16bit(num)
 end
 
 local function read_accel_temp(dev_addr)
-  local bor, lshift, byte = bit.bor, bit.lshift, string.byte
+  local bor, lshift, byte, floor = bit.bor, bit.lshift, string.byte, math.floor
   local ACCEL_XOUT_H =  0x3B
 
   local data = i2c_read(dev_addr, ACCEL_XOUT_H, 8)
@@ -171,7 +171,7 @@ local function read_accel_temp(dev_addr)
   local az = to_signed_16bit(bor(lshift(byte(data, 5), 8), byte(data, 6)))
   local t  = to_signed_16bit(bor(lshift(byte(data, 7), 8), byte(data, 8)))
 
-  return ax / 1638, ay / 1638, az / 1638, t / 34 + 365
+  return floor(ax / 1638), floor(ay / 1638), floor(az / 1638), floor(t / 34 + 365)
 end
 
 local function init_i2c()
