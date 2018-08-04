@@ -11,9 +11,11 @@ else
 end
 
 -- gpio.mode(4, gpio.INPUT, gpio.PULLUP)
-local dev_mode = 0 --gpio.read(4)
+-- local dev_mode = gpio.read(4)
 
-if dev_mode == 0 then
+local dev_mode = (boot == 6)
+
+if dev_mode then
   print("In dev mode, awaiting user input")
 else
   print("In prod mode")
