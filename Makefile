@@ -97,4 +97,7 @@ format:	## Format the flash storage on the ESP8266
 	.python3-venv/bin/nodemcu-uploader --port $(SERIAL_PORT) --baud 115200 file format
 	rm  .uploads/*
 
+reboot:	## reboot and resume normal operation
+	.python3-venv/bin/nodemcu-uploader --port $(SERIAL_PORT) --baud 115200 node restart
+
 .PHONY: help all dev lua-deps python-deps lint test upload firmware flash

@@ -19,7 +19,7 @@ if dev_mode then
   print("In dev mode, awaiting user input")
   print("Call 'reboot()' to restore normal operation")
   function reboot()
-    node.dsleep(1000000, 2) -- 1s
+    node.restart()
   end
 else
   print("In prod mode")
