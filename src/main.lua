@@ -152,6 +152,15 @@ local function init_mpu6050(dev_addr)
   i2c_write(dev_addr, USER_CTRL, 0x00)
 end
 
+local function init_i2c()
+  -- initialize i2c, set pin1 as sda, set pin2 as scl
+  i2c.setup(0, CFG.sda, CFG.scl, i2c.SLOW)
+
+  wait(150)
+
+  init_mpu6050(CFG.mpu6050_addr)
+end
+
 local function to_signed_16bit(num)
   -- convert unsigned 16-bit to signed 16-bit
   if num > 32768 then
@@ -174,13 +183,12 @@ local function read_accel_temp(dev_addr)
   return floor(ax / 1638), floor(ay / 1638), floor(az / 1638), floor(t / 34 + 365)
 end
 
-local function init_i2c()
-    -- initialize i2c, set pin1 as sda, set pin2 as scl
-    i2c.setup(0, CFG.sda, CFG.scl, i2c.SLOW)
+local function tilt(x, y, z)
+  local sqrt, atan2, floor = math.sqrt, require('atan2'), math.floor
 
-    wait(150)
-
-    init_mpu6050(CFG.mpu6050_addr)
+  local pitch = (atan2(y, sqrt(x * x + z * z)))
+  local roll = (atan2(x, sqrt(y * y + z * z)))
+  return floor(sqrt(pitch * pitch + roll * roll))
 end
 
 local function sample_accel_temp()
@@ -188,7 +196,7 @@ local function sample_accel_temp()
 
   local ax, ay, az, t = read_accel_temp(CFG.mpu6050_addr)
 
-  send(ubidots, {accel_x=ax, accel_y=ay, accel_z=az, temperature=t})
+  send(ubidots, {accel_x=ax, accel_y=ay, accel_z=az, temperature=t, tilt=tilt(ax, ay,az)})
 end
 
 local function sample_node()

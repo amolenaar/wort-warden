@@ -3,9 +3,9 @@ local scl = 4
 local sda = 3
 local MPU6050SlaveAddress = 0x68
 
-local AccelScaleFactor = 16384;   -- sensitivity scale factor respective to full scale setting provided in datasheet
-AccelScaleFactor = AccelScaleFactor/10;
-local GyroScaleFactor = 131;
+-- local AccelScaleFactor = 16384;   -- sensitivity scale factor respective to full scale setting provided in datasheet
+-- AccelScaleFactor = AccelScaleFactor/10;
+-- local GyroScaleFactor = 131;
 
 
 local MPU6050_REGISTER_SMPLRT_DIV   =  0x19
@@ -17,7 +17,7 @@ local MPU6050_REGISTER_GYRO_CONFIG  =  0x1B
 local MPU6050_REGISTER_ACCEL_CONFIG =  0x1C
 local MPU6050_REGISTER_FIFO_EN      =  0x23
 local MPU6050_REGISTER_INT_ENABLE   =  0x38
-local MPU6050_REGISTER_ACCEL_XOUT_H =  0x3B
+-- local MPU6050_REGISTER_ACCEL_XOUT_H =  0x3B
 local MPU6050_REGISTER_SIGNAL_PATH_RESET  = 0x68
 
 local function I2C_Write(deviceAddress, regAddress, data)
@@ -50,12 +50,7 @@ local function I2C_Read(deviceAddress, regAddress, SizeOfDataToRead)
     return response
 end
 
-local function unsignTosigned16bit(num)   -- convert unsigned 16-bit no. to signed 16-bit no.
-    if num > 32768 then
-        num = num - 65536
-    end
-    return num
-end
+local i2c_read = I2C_Read
 
 local function MPU6050_Init() --configure MPU6050
     I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_SMPLRT_DIV, 0x07)
@@ -74,39 +69,45 @@ i2c.setup(id, sda, scl, i2c.SLOW)   -- initialize i2c
 tmr.delay(150000)
 MPU6050_Init()
 
-local sqrt = math.sqrt
-local atan2 = require('atan2')
+local function to_signed_16bit(num)
+  -- convert unsigned 16-bit to signed 16-bit
+  if num > 32768 then
+      num = num - 65536
+  end
+  return num
+end
+
+local function read_accel_temp(dev_addr)
+  local bor, lshift, byte, floor = bit.bor, bit.lshift, string.byte, math.floor
+  local ACCEL_XOUT_H =  0x3B
+
+  local data = i2c_read(dev_addr, ACCEL_XOUT_H, 8)
+
+  local ax = to_signed_16bit(bor(lshift(byte(data, 1), 8), byte(data, 2)))
+  local ay = to_signed_16bit(bor(lshift(byte(data, 3), 8), byte(data, 4)))
+  local az = to_signed_16bit(bor(lshift(byte(data, 5), 8), byte(data, 6)))
+  local t  = to_signed_16bit(bor(lshift(byte(data, 7), 8), byte(data, 8)))
+
+  return floor(ax / 1638), floor(ay / 1638), floor(az / 1638), floor(t / 34 + 365)
+end
+
+local function tilt(x, y, z)
+  local sqrt = math.sqrt
+  local atan2 = require('atan2')
+
+  local pitch = (atan2(y, sqrt(x * x + z * z)))
+  local roll = (atan2(x, sqrt(y * y + z * z)))
+  return sqrt(pitch * pitch + roll * roll)
+end
 
 while true do   --read and print accelero, gyro and temperature value
-    local data = I2C_Read(MPU6050SlaveAddress, MPU6050_REGISTER_ACCEL_XOUT_H, 14)
+    -- local data = I2C_Read(MPU6050SlaveAddress, MPU6050_REGISTER_ACCEL_XOUT_H, 14)
 
-    local AccelX = unsignTosigned16bit((bit.bor(bit.lshift(string.byte(data, 1), 8), string.byte(data, 2))))
-    local AccelY = unsignTosigned16bit((bit.bor(bit.lshift(string.byte(data, 3), 8), string.byte(data, 4))))
-    local AccelZ = unsignTosigned16bit((bit.bor(bit.lshift(string.byte(data, 5), 8), string.byte(data, 6))))
-    local Temperature = unsignTosigned16bit(bit.bor(bit.lshift(string.byte(data,7), 8), string.byte(data,8)))
-    local GyroX = unsignTosigned16bit((bit.bor(bit.lshift(string.byte(data, 9), 8), string.byte(data, 10))))
-    local GyroY = unsignTosigned16bit((bit.bor(bit.lshift(string.byte(data, 11), 8), string.byte(data, 12))))
-    local GyroZ = unsignTosigned16bit((bit.bor(bit.lshift(string.byte(data, 13), 8), string.byte(data, 14))))
+    local ax, ay, az, temp = read_accel_temp(MPU6050SlaveAddress)
+    local Tilt = tilt(ax, ay, ax)
 
-    AccelX = AccelX/AccelScaleFactor   -- divide each with their sensitivity scale factor
-    AccelY = AccelY/AccelScaleFactor
-    AccelZ = AccelZ/AccelScaleFactor
-    -- Temperature = Temperature/340+36.53 -- temperature formula
-    Temperature = Temperature/34+365 -- temperature formula temp in 0.1 deg
-    GyroX = GyroX/GyroScaleFactor
-    GyroY = GyroY/GyroScaleFactor
-    GyroZ = GyroZ/GyroScaleFactor
-
-    local x = AccelX
-    local y = AccelY
-    local z = AccelZ
-
-    local pitch = (atan2(y, sqrt(x * x + z * z)))
-    local roll = (atan2(x, sqrt(y * y + z * z)))
-    local Tilt = sqrt(pitch * pitch + roll * roll)
-
-    print(string.format("Ax:%6d Ay:%6d Az:%6d T:%6d  Gx:%6d Gy:%6d Gz:%6d Tilt:%3d",
-                        AccelX, AccelY, AccelZ, Temperature, GyroX, GyroY, GyroZ, Tilt))
+    print(string.format("Ax:%6d Ay:%6d Az:%6d T:%6d - Tilt:%3d",
+                        ax, ay, az, temp, Tilt))
     -- print(string.format("Ax:%.3g Ay:%.3g Az:%.3g T:%.3g Gx:%.3g Gy:%.3g Gz:%.3g  Tilt:%.3g",
     --                     AccelX, AccelY, AccelZ, Temperature, GyroX, GyroY, GyroZ, Tilt))
     tmr.delay(500000)   -- 500ms timer delay
