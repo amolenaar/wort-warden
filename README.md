@@ -4,8 +4,8 @@ Wort Warden is a little device that measures the progress of beer fermentation f
 
 It's heavely inspired on the [iSpindel](), who's in turn based on the [Tilt Hydrometer](https://tilthydrometer.com).
 
-Although similar, this model is simpler, since it's using both a I2C gyrometer
-and an I2C thermometer. The code base is simpler than the iSpindel, since it's
+Although similar, this model is simpler, since it's using both a I<sup>2</sup>C gyrometer
+and an I<sup>2</sup>C thermometer. The code base is simpler than the iSpindel, since it's
 based on [NodeMCU](https://nodemcu.readthedocs.io/en/master/).
 
 I hope the installation process will be simpler as well, but that remains to be seen :).
@@ -33,7 +33,7 @@ The first thing to know is that you should have
 * [Python](https://www.python.org) 3 (I'm using 3.6 currently)
 * Oh, and [GNU Make](https://www.gnu.org/software/make/), our build system
 * [Docker](https://www.docker.com), to support the firmware build process
-* (CH340 drivers)[https://wiki.wemos.cc/downloads], to communicate with the Wemos device over USB
+* [CH340 drivers](https://wiki.wemos.cc/downloads), to communicate with the Wemos device over USB
 * Optionally, [Fritzing](http://fritzing.org/), to view the schematics
 
 Once you have that set up, you can run some tests:
@@ -69,17 +69,17 @@ will suffice. There are some other commands available from the Makefile. You can
 
 That should be enough to get you started.
 
-The application itself makes heavy use of Lua's [coroutines](https://www.lua.org/pil/9.html). This makes it possible to perform multiple tasks (e.g. setting up wifi and i2c) simultaniously. Through the [scheduler](src/scheduler.lua), the coroutines can send messages to each other, kinda like [actors](https://en.wikipedia.org/wiki/Actor_model).
+The application itself makes heavy use of Lua's [coroutines](https://www.lua.org/pil/9.html). This makes it possible to perform multiple tasks (e.g. setting up wifi and I<sup>2</sup>C) simultaniously. Through the [scheduler](src/scheduler.lua), the coroutines can send messages to each other, kinda like [actors](https://en.wikipedia.org/wiki/Actor_model).
 
 Backlog:
 
 - [x] Set up development environment
 - [x] Deploy minimal app to Wemos board
 - [x] Test WIFI, deep sleep
-- [x] Test I2C
+- [x] Test I<sup>2</sup>C
 - [x] Create a toggle to start into dev mode -> Use the reset button
 - [x] Disable unused modules in `app/include/user_modules.h`
 - [ ] Test without modifications with a small USB charger
 - [ ] Build everything into the PETling tube - use foamboard for starters
 - [ ] Calibrate vessel
-- [ ] Should the i2c device be connected to vdd or to a pin, so it can be really shut off.
+- [ ] Should the I<sup>2</sup>C device be connected to vdd or to a pin, so it can be really shut off.
