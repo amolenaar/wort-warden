@@ -13,13 +13,13 @@ I hope the installation process will be simpler as well, but that remains to be 
 
 ## Shopping list
 
-* [PETling XXL](https://www.cache-corner.de/Cachebehaelter/Small/XXL-PETling.html)
 * [Wemos D1 mini](https://wemos.cc)
 * Gyroscope: GY-521 [MPU-6050](https://store.invensense.com/datasheets/invensense/MPU-6050_DataSheet_V3%204.pdf) breakout board
   ([Register map](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf))
 * NCR18650B Rechargeable Li-ion Battery (3.7 V)
 * [TP4056](https://hackaday.io/project/9900-rian-simple-and-easy-built-robot-for-education/log/33402-charge-circuit-tp4056-with-over-discharge-protection) Lithium Battery Charger Module
 * Battery holder
+* [PETling XXL tube](https://www.cache-corner.de/Cachebehaelter/Small/XXL-PETling.html)
 
 If the temperature reading from the GY-521 are not accurate enough we can always resort to a
 [MCP9808](http://ww1.microchip.com/downloads/en/DeviceDoc/25095A.pdf) breakout board.
