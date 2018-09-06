@@ -25,13 +25,7 @@ local yield = coroutine.yield
 
 function schedule(func)
   local jid = next_job_id
-  local func2
-  -- if debug and debug.traceback then
-  --   func2 = function() xpcall(func, function() print(debug.traceback()) end) end
-  -- else
-    func2 = func
-  -- end
-  job_list[jid] = {coroutine.create(func2), qnew()}
+  job_list[jid] = {coroutine.create(func), qnew()}
   next_job_id = next_job_id + 1
   return jid
 end
