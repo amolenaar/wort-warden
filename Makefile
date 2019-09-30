@@ -14,7 +14,8 @@ SERIAL_PORT = /dev/cu.wchusbserial*
 
 help:           ## Show this help
 	@echo "make <target>, where <target> is one of:"
-	@grep -h "\t##" $(MAKEFILE_LIST) | sed -e 's/:.*##/	/' | expand -t20
+	@echo $(MAKEFILE_LIST)
+	@grep -hP "\t##" $(MAKEFILE_LIST) | sed -e 's/:.*##/	/' | expand -t20
 
 all: firmware		## Build all
 
