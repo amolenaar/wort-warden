@@ -10,7 +10,8 @@
 
 DEV_ROCKS = "busted 2.0.rc12" "luacheck 0.20.0" "luafilesystem 1.7.0-2"
 ROCKS_PATH = $(shell luarocks config --rock-trees | head -1 | cut -f1 )
-SERIAL_PORT = /dev/cu.wchusbserial*
+# MacOS: SERIAL_PORT = /dev/cu.wchusbserial*
+SERIAL_PORT = /dev/ttyUSB0
 
 help:           ## Show this help
 	@echo "make <target>, where <target> is one of:"
@@ -22,8 +23,8 @@ all: firmware		## Build all
 dev: env-check python-deps lua-deps	## Set up your development environment, Lua and Python should be installed
 
 env-check:
-	@which luarocks >&- || { echo "Luarocks not found. Please install Lua before proceeding" && exit 1; }
-	@which python3 >&- || { echo "Python 3.x not found. Please install Python 3 before proceeding" && exit 1; }
+	@which luarocks || { echo "Luarocks not found. Please install Lua before proceeding" && exit 1; }
+	@which python3 || { echo "Python 3.x not found. Please install Python 3 before proceeding" && exit 1; }
 	@echo "Lua and Python 3 have been found. Let's continue."
 
 lua-deps:
