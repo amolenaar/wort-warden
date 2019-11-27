@@ -36,17 +36,23 @@ The first thing to know is that you should have
 * [CH340 drivers](https://wiki.wemos.cc/downloads), to communicate with the Wemos device over USB
 * Optionally, [Fritzing](http://fritzing.org/), to view the schematics
 
+Next, adapt the configuration for your (home) environment:
+
+    cp src/config-example.lua src/config.lua
+
+And edit the file to match your home WiFi and a Ubidots device token, although you can do the last one later as well.
+
 Once you have that set up, you can run some tests:
 
     make test
 
-This should execute the local unit tests. See you can deal with embedded software without having a device at hand.
+This should execute the local unit tests. Very handy if you feel the need to change the software.
 
 If you have your Wemos board plugged into the computer, you can flash it with NodeMCU:
 
     make flash
 
-This will download the NodeMCU sources (the master branch) and build the firmware containing only the required modules. Note that the firmware is only capable of handing integers. The firmware I'm using is the ["integer build"](https://nodemcu.readthedocs.io/en/master/en/build/#integer-build).
+This will download the NodeMCU sources (the master branch) and build the firmware containing only the required modules.
 
 After the device is set up with the right firmware you should be able to connect to it:
 
