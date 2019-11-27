@@ -66,7 +66,7 @@ upload: lint test .uploads/init .uploads/main .uploads/scheduler .uploads/atan2 
 ## Firmware
 ##
 
-FIRMWARE_IMAGE=nodemcu-firmware/bin/nodemcu_integer_wort-warden.bin
+FIRMWARE_IMAGE=nodemcu-firmware/bin/nodemcu_float_wort-warden.bin
 
 firmware: $(FIRMWARE_IMAGE)	## Build the firmware image
 
@@ -89,7 +89,7 @@ nodemcu-firmware/app/include/user_modules.h: include/user_modules.h
 ##
 ## Auxilary commands
 ##
-tty:	## Open a TTY (screen) session with the ESP8266
+tty:	## Open a TTY (screen) session with the ESP8266 (`C-A d` to exit)
 	screen $(SERIAL_PORT) 115200
 
 list:	## List all files on the ESP8266
@@ -97,7 +97,7 @@ list:	## List all files on the ESP8266
 
 format:	## Format the flash storage on the ESP8266
 	.python3-venv/bin/nodemcu-uploader --port $(SERIAL_PORT) --baud 115200 file format
-	rm  .uploads/*
+	test -d .uploads && rm .uploads/*
 
 reboot:	## reboot and resume normal operation
 	.python3-venv/bin/nodemcu-uploader --port $(SERIAL_PORT) --baud 115200 node restart
