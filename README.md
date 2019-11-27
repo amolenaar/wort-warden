@@ -75,7 +75,17 @@ will suffice. There are some other commands available from the Makefile. You can
 
 That should be enough to get you started.
 
+The application itself will deep sleep for a period of time before waking. If the reset button is pressed,
+the application will wake up (boot reason `5`). If a reset is pressed shortly after, the device will reboot
+again (boot reason `6`) and will end up in developer/debug mode.
+
 The application itself makes heavy use of Lua's [coroutines](https://www.lua.org/pil/9.html). This makes it possible to perform multiple tasks (e.g. setting up wifi and I<sup>2</sup>C) simultaniously. Through the [scheduler](src/scheduler.lua), the coroutines can send messages to each other, kinda like [actors](https://en.wikipedia.org/wiki/Actor_model).
+
+# Ubidots
+
+The application is set up to send data to [Ubidots (for education)](https://app.ubidots.com) over MQTT. Once you have an account,
+you can create a new device. This device will be assigned an API token, which can be found under "API credentials".
+
 
 Backlog:
 
