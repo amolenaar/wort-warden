@@ -53,9 +53,10 @@ function start(on_finished)
 
   local resume = coroutine.resume
   -- Put a 10ms interval here, to avoid busy waiting
-  tmr.alarm(1, 10, tmr.ALARM_AUTO, function(timer_id)
+  local timer = tmr.create()
+  timer:alarm(10, tmr.ALARM_AUTO, function()
     if not resume(loop) then
-      tmr.unregister(timer_id)
+      timer:unregister()
       if on_finished then on_finished() end
     end
   end)

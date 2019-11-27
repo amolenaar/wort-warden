@@ -4,8 +4,9 @@ describe("Timer", function()
 
   it("should execute a single alarm", function()
     local value
+    local t = tmr.create()
 
-    tmr.alarm(1, 0, tmr.ALARM_SINGLE, function()
+    t:alarm(0, tmr.ALARM_SINGLE, function()
       value = "been there"
     end)
 
@@ -16,11 +17,12 @@ describe("Timer", function()
 
   it("should execute a auto alarm", function()
     local counter = 0
+    local t = tmr.create()
 
-    tmr.alarm(1, 0, tmr.ALARM_AUTO, function(ref)
+    t:alarm(0, tmr.ALARM_AUTO, function()
       counter = counter + 1
       if counter > 9 then
-        tmr.unregister(ref)
+        t:unregister()
       end
     end)
 
@@ -31,8 +33,9 @@ describe("Timer", function()
 
   it("should rerun", function()
     local value
+    local t = tmr.create()
 
-    tmr.alarm(1, 0, tmr.ALARM_SINGLE, function()
+    t:alarm(0, tmr.ALARM_SINGLE, function()
       value = "been there"
     end)
 
@@ -40,7 +43,7 @@ describe("Timer", function()
 
     assert.are.equal("been there", value)
 
-    tmr.alarm(1, 0, tmr.ALARM_SINGLE, function()
+    t:alarm(0, tmr.ALARM_SINGLE, function()
       value = "been there too"
     end)
 
