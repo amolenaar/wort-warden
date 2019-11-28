@@ -89,7 +89,7 @@ nodemcu-firmware/app/include/user_modules.h: include/user_modules.h
 ##
 ## Auxilary commands
 ##
-tty:	## Open a TTY (screen) session with the ESP8266 (`C-A d` to exit)
+tty:	## Open a TTY (screen) session with the ESP8266 (`C-A \` to exit)
 	screen $(SERIAL_PORT) 115200
 
 list:	## List all files on the ESP8266
