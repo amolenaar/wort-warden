@@ -3,54 +3,24 @@ require('scheduler')
 local CFG = require('config')
 local gy521 = require('gy521')
 
--- Get 3-axis gyroscope readings.
--- These gyroscope measurement registers, along with the accelerometer
--- measurement registers, temperature measurement registers, and external sensor
--- data registers, are composed of two sets of registers: an internal register
--- set and a user-facing read register set.
--- The data within the gyroscope sensors' internal register set is always
--- updated at the Sample Rate. Meanwhile, the user-facing read register set
--- duplicates the internal register set's data values whenever the serial
--- interface is idle. This guarantees that a burst read of sensor registers will
--- read measurements from the same sampling instant. Note that if burst reads
--- are not used, the user is responsible for ensuring a set of single byte reads
--- correspond to a single sampling instant by checking the Data Ready interrupt.
---
--- Each 16-bit gyroscope measurement has a full scale defined in FS_SEL
--- (Register 27). For each full scale setting, the gyroscopes' sensitivity per
--- LSB in GYRO_xOUT is shown in the table below:
---
--- FS_SEL | Full Scale Range   | LSB Sensitivity
--- -------+--------------------+----------------
--- 0      | +/- 250 degrees/s  | 131 LSB/deg/s
--- 1      | +/- 500 degrees/s  | 65.5 LSB/deg/s
--- 2      | +/- 1000 degrees/s | 32.8 LSB/deg/s
--- 3      | +/- 2000 degrees/s | 16.4 LSB/deg/s
-
--- local sqrt = math.sqrt
--- local atan2 = require('atan2')
--- pitch = (atan2(y, sqrt(x * x + z * z)))
--- roll = (atan2(x, sqrt(y * y + z * z)))
--- Tilt = sqrt(pitch * pitch + roll * roll)
-
 local ubidots
 
 -- Networking
 
 local function init_wifi()
-  print('WIFI: ...')
+  print('WIFI: init')
   local now, yield = tmr.now, coroutine.yield
-  local timeout_at = now() + 10000000  -- 10s
+    local timeout_at = now() + 10000000  -- 10s
 
-  wifi.sta.config {ssid=CFG.ssid, pwd=CFG.pwd}
-  wifi.sta.connect()
+  wifi.setmode(wifi.STATION)
+  wifi.sta.config {ssid=CFG.ssid, pwd=CFG.pwd, auto=true}
 
   local getip = wifi.sta.getip
 
   while timeout_at > now() do
     yield()
     if getip() then
-      print('WIFI: up')
+      print('WIFI: up '..tostring(getip()))
       return true
     end
   end
@@ -58,13 +28,13 @@ local function init_wifi()
 end
 
 local function init_mqtt(client_id)
-  print('MQTT: ...')
+  print('MQTT: init')
   local now, yield = tmr.now, coroutine.yield
   local timeout_at = now() + 10000000 -- 10s
   local mqtt_client, failed
   local m = mqtt.Client(client_id, 120, CFG.token, "")
 
-  m:connect("things.ubidots.com", 1883, 0, 0,
+  m:connect("things.ubidots.com", 1883, false,
     function(client)
       print('MQTT: up')
       mqtt_client = client
