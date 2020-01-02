@@ -29,40 +29,36 @@ local function i2c_read(dev_addr, reg_addr, bytes_to_read)
 end
 
 local function init_mpu6050(dev_addr)
-  local USER_CTRL    =  0x6A
-  local SMPLRT_DIV   =  0x19
-  local PWR_MGMT_1   =  0x6B
-  local PWR_MGMT_2   =  0x6C
-  local CONFIG       =  0x1A
-  -- local GYRO_CONFIG  =  0x1B
-  local ACCEL_CONFIG =  0x1C
-  local FIFO_EN      =  0x23
-  local INT_ENABLE   =  0x38
-  local SIGNAL_PATH_RESET  = 0x68
+  local SMPLRT_DIV   = 0x19
+  local PWR_MGMT_1   = 0x6B
+  local PWR_MGMT_2   = 0x6C
+  local CONFIG       = 0x1A
+  local ACCEL_CONFIG = 0x1C
+  local FIFO_EN      = 0x23
+  local INT_ENABLE   = 0x38
+  local SIGNAL_PATH_RESET = 0x68
+  local USER_CTRL    = 0x6A
 
   i2c_write(dev_addr, SMPLRT_DIV, 0x07)
-  i2c_write(dev_addr, PWR_MGMT_1, 0x01)
-  i2c_write(dev_addr, PWR_MGMT_2, 0x07) -- Gyroscope in standby mode
+  i2c_write(dev_addr, PWR_MGMT_1, 0x00) -- wke up, clksel internal 8MHz clock
+  i2c_write(dev_addr, PWR_MGMT_2, 0x07) -- wake ctrl 1.25Hz, Gyroscope in standby mode
   i2c_write(dev_addr, CONFIG, 0x00)
-  -- i2c_write(dev_addr, GYRO_CONFIG, 0x00) -- set +/-500 degree/second full scale
   i2c_write(dev_addr, ACCEL_CONFIG, 0x00) -- set +/- 2g full scale
   i2c_write(dev_addr, FIFO_EN, 0x00)
-  i2c_write(dev_addr, INT_ENABLE, 0x01)
+  i2c_write(dev_addr, INT_ENABLE, 0x00)
   i2c_write(dev_addr, SIGNAL_PATH_RESET, 0x00)
   i2c_write(dev_addr, USER_CTRL, 0x00)
 end
 
 local function init_gy521(sda, scl, dev_addr)
-  -- initialize i2c, set pin1 as sda, set pin2 as scl
-  i2c.setup(0, sda, scl, i2c.SLOW)
-
-  -- wait(150)
-
+  local speed = i2c.setup(0, sda, scl, i2c.SLOW)
+  print("I2C initialized, speed = "..speed)
   init_mpu6050(dev_addr)
 end
 
 local function sleep_gy521(dev_addr)
-  print("TODO: sleep GY-521 "..dev_addr)
+  local PWR_MGMT_1 = 0x6B
+  i2c_write(dev_addr, PWR_MGMT_1, 0x40) -- low power (sleep) mode
 end
 
 local function to_signed_16bit(num)
@@ -84,7 +80,6 @@ local function tilt(x, y, z)
 end
 
 local function read_accel_temp(dev_addr)
-  -- local bor, lshift, byte, floor = bit.bor, bit.lshift, string.byte, math.floor
   local bor, lshift, byte = bit.bor, bit.lshift, string.byte
   local ACCEL_XOUT_H =  0x3B
 
@@ -94,14 +89,6 @@ local function read_accel_temp(dev_addr)
   local ay = to_signed_16bit(bor(lshift(byte(data, 3), 8), byte(data, 4)))
   local az = to_signed_16bit(bor(lshift(byte(data, 5), 8), byte(data, 6)))
   local t  = to_signed_16bit(bor(lshift(byte(data, 7), 8), byte(data, 8)))
-
-  -- return floor(ax / 16), floor(ay / 16), floor(az / 16), floor(t / 340 + 36.53)
-
-  -- only take MSB
-  -- local ax = byte(data, 1)
-  -- local ay = byte(data, 3)
-  -- local az = byte(data, 5)
-  -- local t  = to_signed_16bit(bor(lshift(byte(data, 7), 8), byte(data, 8)))
 
   return ax / 16384.0, ay / 16384.0, az / 16384.0, (t / 340.0 + 36.53)
 end
