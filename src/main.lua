@@ -87,9 +87,26 @@ end
 local function sample_accel_temp()
   gy521.init(CFG.sda, CFG.scl, CFG.mpu6050_addr)
 
-  wait(150)
 
-  local ax, ay, az, t = gy521.read_accel_temp(CFG.mpu6050_addr)
+  local count = 0
+  local rounds = 8
+  local ax_t, ay_t, az_t, t_t = 0.0, 0.0, 0.0, 0.0
+  local ax, ay, az, t
+
+  while count < rounds do
+    wait(100)
+    ax, ay, az, t = gy521.read_accel_temp(CFG.mpu6050_addr)
+    ax_t = ax_t + ax
+    ay_t = ay_t + ay
+    az_t = az_t + az
+    t_t = t_t + t
+    count = count + 1
+  end
+
+  ax = ax_t / rounds
+  ay = ay_t / rounds
+  az = az_t / rounds
+  t = t_t / rounds
 
   send(ubidots, {accel_x=ax, accel_y=ay, accel_z=az, temperature=t, tilt=gy521.tilt(ax, ay,az)})
 
