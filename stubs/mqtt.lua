@@ -16,7 +16,7 @@ function mqtt.Client(msg)
   return client
 end
 
-function Client:connect(host, port, secure, autoreconnect, on_connect, on_error)
+function Client:connect(host, port, secure, on_connect, on_error)
   on_connect(self)
   -- print("MQTT client connected")
 end

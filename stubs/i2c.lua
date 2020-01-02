@@ -12,6 +12,7 @@ local i2c = {
 
 function i2c.setup(id, pinSDA, pinSCL, speed)
   assert(id == 0)
+  return 1
 end
 
 function i2c.start(id)
