@@ -1,6 +1,7 @@
 
 require('scheduler')
 local CFG = require('config')
+local gy521 = require('gy521')
 
 -- Get 3-axis gyroscope readings.
 -- These gyroscope measurement registers, along with the accelerometer
@@ -112,105 +113,17 @@ local function sender()
   end
 end
 
--- I2C / GY-521
 
-local function i2c_write(dev_addr, reg_addr, data)
-  i2c.start(0)
-  if i2c.address(0, dev_addr, i2c.TRANSMITTER) then
-      i2c.write(0, reg_addr)
-      i2c.write(0, data)
-      i2c.stop(0)
-  else
-      print("I2C write fails")
-  end
-end
-
-local function i2c_read(dev_addr, reg_addr, bytes_to_read)
-  local response = 0;
-  i2c.start(0)
-  if i2c.address(0, dev_addr, i2c.TRANSMITTER) then
-      i2c.write(0, reg_addr)
-      i2c.stop(0)
-      i2c.start(0)
-      i2c.address(0, dev_addr, i2c.RECEIVER)
-      response = i2c.read(0, bytes_to_read)
-      i2c.stop(0)
-      return response
-  else
-      print("I2C read fails")
-  end
-  return response
-end
-
-local function init_mpu6050(dev_addr)
-  local USER_CTRL    =  0x6A
-  local SMPLRT_DIV   =  0x19
-  local PWR_MGMT_1   =  0x6B
-  local PWR_MGMT_2   =  0x6C
-  local CONFIG       =  0x1A
-  -- local GYRO_CONFIG  =  0x1B
-  local ACCEL_CONFIG =  0x1C
-  local FIFO_EN      =  0x23
-  local INT_ENABLE   =  0x38
-  local SIGNAL_PATH_RESET  = 0x68
-
-  i2c_write(dev_addr, SMPLRT_DIV, 0x07)
-  i2c_write(dev_addr, PWR_MGMT_1, 0x01)
-  i2c_write(dev_addr, PWR_MGMT_2, 0x07) -- Gyroscope in standby mode
-  i2c_write(dev_addr, CONFIG, 0x00)
-  -- i2c_write(dev_addr, GYRO_CONFIG, 0x00) -- set +/-500 degree/second full scale
-  i2c_write(dev_addr, ACCEL_CONFIG, 0x00) -- set +/- 2g full scale
-  i2c_write(dev_addr, FIFO_EN, 0x00)
-  i2c_write(dev_addr, INT_ENABLE, 0x01)
-  i2c_write(dev_addr, SIGNAL_PATH_RESET, 0x00)
-  i2c_write(dev_addr, USER_CTRL, 0x00)
-end
-
-local function init_i2c()
-  -- initialize i2c, set pin1 as sda, set pin2 as scl
-  i2c.setup(0, CFG.sda, CFG.scl, i2c.SLOW)
+local function sample_accel_temp()
+  gy521.init(CFG.sda, CFG.scl, CFG.mpu6050_addr)
 
   wait(150)
 
-  init_mpu6050(CFG.mpu6050_addr)
-end
+  local ax, ay, az, t = gy521.read_accel_temp(CFG.mpu6050_addr)
 
-local function to_signed_16bit(num)
-  -- convert unsigned 16-bit to signed 16-bit
-  if num > 32768 then
-      num = num - 65536
-  end
-  return num
-end
+  send(ubidots, {accel_x=ax, accel_y=ay, accel_z=az, temperature=t, tilt=gy521.tilt(ax, ay,az)})
 
-local function read_accel_temp(dev_addr)
-  local bor, lshift, byte, floor = bit.bor, bit.lshift, string.byte, math.floor
-  local ACCEL_XOUT_H =  0x3B
-
-  local data = i2c_read(dev_addr, ACCEL_XOUT_H, 8)
-
-  local ax = to_signed_16bit(bor(lshift(byte(data, 1), 8), byte(data, 2)))
-  local ay = to_signed_16bit(bor(lshift(byte(data, 3), 8), byte(data, 4)))
-  local az = to_signed_16bit(bor(lshift(byte(data, 5), 8), byte(data, 6)))
-  local t  = to_signed_16bit(bor(lshift(byte(data, 7), 8), byte(data, 8)))
-
-  return floor(ax / 1638), floor(ay / 1638), floor(az / 1638), floor(t / 34 + 365)
-end
-
-local function tilt(x, y, z)
-  local sqrt, atan2, floor = math.sqrt, require('atan2'), math.floor
-
-  local pitch = (atan2(y, sqrt(x * x + z * z)))
-  local roll = (atan2(x, sqrt(y * y + z * z)))
-  return floor(sqrt(pitch * pitch + roll * roll))
-end
-
-local function sample_accel_temp()
-  init_i2c()
-
-  local ax, ay, az, t = read_accel_temp(CFG.mpu6050_addr)
-
-  send(ubidots, {accel_x=ax, accel_y=ay, accel_z=az, temperature=t, tilt=tilt(ax, ay,az)})
+  gy521.sleep(CFG.mpu6050_addr)
 end
 
 -- Sample diagnostics info

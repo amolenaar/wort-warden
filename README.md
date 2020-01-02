@@ -2,7 +2,7 @@
 
 Wort Warden is a little device that measures the progress of beer fermentation from within the fermentation vessel.
 
-It's heavely inspired on the [iSpindel](), who's in turn based on the [Tilt Hydrometer](https://tilthydrometer.com).
+It's heavely inspired on the [iSpindel](https://www.ispindel.de/), which in turn is based on the [Tilt Hydrometer](https://tilthydrometer.com).
 
 Although similar, this model is simpler, since it's using both a I<sup>2</sup>C gyrometer
 and an I<sup>2</sup>C thermometer. The code base is simpler than the iSpindel, since it's
@@ -14,8 +14,8 @@ I hope the installation process will be simpler as well, but that remains to be 
 ## Shopping list
 
 * [Wemos D1 mini](https://wemos.cc)
-* Gyroscope: GY-521 [MPU-6050](https://store.invensense.com/datasheets/invensense/MPU-6050_DataSheet_V3%204.pdf) breakout board
-  ([Register map](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf))
+* Gyroscope: GY-521 [MPU-6050](https://www.invensense.com/products/motion-tracking/6-axis/mpu-6050/) breakout board
+  ([Datasheet](https://43zrtwysvxb2gf29r5o0athu-wpengine.netdna-ssl.com/wp-content/uploads/2015/02/MPU-6000-Datasheet1.pdf), [Register map](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf))
 * NCR18650B Rechargeable Li-ion Battery (3.7 V)
 * [TP4056](https://hackaday.io/project/9900-rian-simple-and-easy-built-robot-for-education/log/33402-charge-circuit-tp4056-with-over-discharge-protection) Lithium Battery Charger Module
 * Battery holder
@@ -29,8 +29,8 @@ If the temperature reading from the GY-521 are not accurate enough we can always
 The first thing to know is that you should have
 
 * A Unix machine (Linux, MacOS)
-* [Lua](https://www.lua.org) 5.2 or newer
-* [Python](https://www.python.org) 3 (I'm using 3.6 currently)
+* [Lua](https://www.lua.org) 5.1 or newer
+* [Python](https://www.python.org) 3 (I'm using 3.7 currently)
 * Oh, and [GNU Make](https://www.gnu.org/software/make/), our build system
 * [Docker](https://www.docker.com), to support the firmware build process
 * [CH340 drivers](https://wiki.wemos.cc/downloads), to communicate with the Wemos device over USB
