@@ -58,12 +58,12 @@ After the device is set up with the right firmware you should be able to connect
 
     make tty
 
-This should open a TTY (screen) connection to the device. If you're using Linux you may need to change the `SERIAL_PORT` in the _Makefile_.
+This should open a TTY connection to the device. If you're using Linux you may need to change the `SERIAL_PORT` in the _Makefile_.
 Now you can type some Lua code in the console:
 
     > print('Hello world')
 
-Terminate the session with the key combo's Ctrl-A, Ctrl-K, and confirm (`y`).
+Terminate the session with the key combo `Ctrl-]`.
 
 To upload the application onto the device, a  simple
 

@@ -38,7 +38,7 @@ lua-deps:
         done;
 
 python-deps: .python3-venv
-	@.python3-venv/bin/pip3 install nodemcu-uploader esptool
+	@.python3-venv/bin/pip3 install nodemcu-uploader esptool pyserial
 
 .python3-venv:
 	python3 -m venv .python3-venv
@@ -89,8 +89,8 @@ nodemcu-firmware/app/include/user_modules.h: include/user_modules.h
 ##
 ## Auxilary commands
 ##
-tty:	## Open a TTY (screen) session with the ESP8266 (`C-A \` to exit)
-	screen $(SERIAL_PORT) 115200
+tty:	## Open a TTY (screen) session with the ESP8266 (`C-]` to exit)
+	.python3-venv/bin/python3 -m serial.tools.miniterm $(SERIAL_PORT) 115200
 
 list:	## List all files on the ESP8266
 	.python3-venv/bin/nodemcu-uploader --port $(SERIAL_PORT) --baud 115200 file list
