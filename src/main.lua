@@ -1,6 +1,7 @@
 
 require('scheduler')
 local CFG = require('config')
+local accel = require('accel')
 local gy521 = require('gy521')
 
 local ubidots
@@ -34,7 +35,7 @@ local function init_mqtt(client_id)
   local mqtt_client, failed
   local m = mqtt.Client(client_id, 120, CFG.token, "")
 
-  m:connect("things.ubidots.com", 1883, false,
+  m:connect("industrial.api.ubidots.com", 1883, false,
     function(client)
       print('MQTT: up')
       mqtt_client = client
@@ -85,8 +86,7 @@ end
 
 
 local function sample_accel_temp()
-  gy521.init(CFG.sda, CFG.scl, CFG.mpu6050_addr)
-
+  gy521.init()
 
   local count = 0
   local rounds = 8
@@ -94,8 +94,8 @@ local function sample_accel_temp()
   local ax, ay, az, t
 
   while count < rounds do
-    wait(100)
-    ax, ay, az, t = gy521.read_accel_temp(CFG.mpu6050_addr)
+    --wait(100)
+    ax, ay, az, t = gy521.read_accel_temp()
     ax_t = ax_t + ax
     ay_t = ay_t + ay
     az_t = az_t + az
@@ -108,9 +108,9 @@ local function sample_accel_temp()
   az = az_t / rounds
   t = t_t / rounds
 
-  send(ubidots, {accel_x=ax, accel_y=ay, accel_z=az, temperature=t, tilt=gy521.tilt(ax, ay,az)})
+  send(ubidots, {accel_x=ax, accel_y=ay, accel_z=az, temperature=t, tilt=accel.tilt(ax, ay, az)})
 
-  gy521.sleep(CFG.mpu6050_addr)
+  gy521.sleep()
 end
 
 -- Sample diagnostics info

@@ -1,4 +1,7 @@
 -- I2C / GY-521
+local sda = 3
+local scl = 4
+local mpu6050_addr = 0x68
 
 local function i2c_write(dev_addr, reg_addr, data)
   i2c.start(0)
@@ -28,7 +31,7 @@ local function i2c_read(dev_addr, reg_addr, bytes_to_read)
   return response
 end
 
-local function init_mpu6050(dev_addr)
+local function init_mpu6050()
   local SMPLRT_DIV   = 0x19
   local PWR_MGMT_1   = 0x6B
   local PWR_MGMT_2   = 0x6C
@@ -39,26 +42,26 @@ local function init_mpu6050(dev_addr)
   local SIGNAL_PATH_RESET = 0x68
   local USER_CTRL    = 0x6A
 
-  i2c_write(dev_addr, SMPLRT_DIV, 0x07)
-  i2c_write(dev_addr, PWR_MGMT_1, 0x00) -- wke up, clksel internal 8MHz clock
-  i2c_write(dev_addr, PWR_MGMT_2, 0x07) -- wake ctrl 1.25Hz, Gyroscope in standby mode
-  i2c_write(dev_addr, CONFIG, 0x00)
-  i2c_write(dev_addr, ACCEL_CONFIG, 0x00) -- set +/- 2g full scale
-  i2c_write(dev_addr, FIFO_EN, 0x00)
-  i2c_write(dev_addr, INT_ENABLE, 0x00)
-  i2c_write(dev_addr, SIGNAL_PATH_RESET, 0x00)
-  i2c_write(dev_addr, USER_CTRL, 0x00)
+  i2c_write(mpu6050_addr, SMPLRT_DIV, 0x07)
+  i2c_write(mpu6050_addr, PWR_MGMT_1, 0x00) -- wke up, clksel internal 8MHz clock
+  i2c_write(mpu6050_addr, PWR_MGMT_2, 0x07) -- wake ctrl 1.25Hz, Gyroscope in standby mode
+  i2c_write(mpu6050_addr, CONFIG, 0x00)
+  i2c_write(mpu6050_addr, ACCEL_CONFIG, 0x00) -- set +/- 2g full scale
+  i2c_write(mpu6050_addr, FIFO_EN, 0x00)
+  i2c_write(mpu6050_addr, INT_ENABLE, 0x00)
+  i2c_write(mpu6050_addr, SIGNAL_PATH_RESET, 0x00)
+  i2c_write(mpu6050_addr, USER_CTRL, 0x00)
 end
 
-local function init_gy521(sda, scl, dev_addr)
+local function init_gy521()
   local speed = i2c.setup(0, sda, scl, i2c.SLOW)
   print("I2C initialized, speed = "..speed)
-  init_mpu6050(dev_addr)
+  init_mpu6050()
 end
 
-local function sleep_gy521(dev_addr)
+local function sleep_gy521()
   local PWR_MGMT_1 = 0x6B
-  i2c_write(dev_addr, PWR_MGMT_1, 0x40) -- low power (sleep) mode
+  i2c_write(mpu6050_addr, PWR_MGMT_1, 0x40) -- low power (sleep) mode
 end
 
 local function to_signed_16bit(num)
@@ -69,21 +72,12 @@ local function to_signed_16bit(num)
   return num
 end
 
-local function tilt(x, y, z)
-  local sqrt = math.sqrt
 
-  local xz = sqrt(x * x + z * z)
-  if xz == 0 then
-    return 90
-  end
-  return sqrt(y * y + xz * xz) * 90
-end
-
-local function read_accel_temp(dev_addr)
+local function read_accel_temp()
   local bor, lshift, byte = bit.bor, bit.lshift, string.byte
   local ACCEL_XOUT_H =  0x3B
 
-  local data = i2c_read(dev_addr, ACCEL_XOUT_H, 8)
+  local data = i2c_read(mpu6050_addr, ACCEL_XOUT_H, 8)
 
   local ax = to_signed_16bit(bor(lshift(byte(data, 1), 8), byte(data, 2)))
   local ay = to_signed_16bit(bor(lshift(byte(data, 3), 8), byte(data, 4)))
@@ -96,7 +90,6 @@ end
 return {
   read=i2c_read,
   write=i2c_write,
-  tilt=tilt,
   init=init_gy521,
   read_accel_temp=read_accel_temp,
   sleep=sleep_gy521

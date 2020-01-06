@@ -10,9 +10,6 @@ else
   rtcmem.write32(0, starts + 1)
 end
 
--- gpio.mode(4, gpio.INPUT, gpio.PULLUP)
--- local dev_mode = gpio.read(4)
-
 local dev_mode = (boot == 6)
 
 if dev_mode then
