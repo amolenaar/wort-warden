@@ -45,8 +45,8 @@ end
 
 local function tilt(ax, ay, az)
   local sqrt = math.sqrt
-  local p = pitch(ay, az) --sqrt(ax * ax + az * az))
-  local r = roll(ax, az) --sqrt(ay * ay + az * az))
+  local p = pitch(ay, sqrt(ax * ax + az * az))
+  local r = roll(ax, sqrt(ay * ay + az * az))
 
   return sqrt(p * p + r * r)
 end

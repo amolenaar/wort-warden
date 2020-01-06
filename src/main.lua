@@ -108,7 +108,7 @@ local function sample_accel_temp()
   az = az_t / rounds
   t = t_t / rounds
 
-  send(ubidots, {accel_x=ax, accel_y=ay, accel_z=az, temperature=t, tilt=accel.tilt(ax, ay, az)})
+  send(ubidots, {accel_x=ax, accel_y=ay, accel_z=az, temperature=t, pitch=accel.pitch(ay, az), roll=accel.roll(ax, az)})
 
   gy521.sleep()
 end
