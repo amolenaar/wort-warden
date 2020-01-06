@@ -1,5 +1,7 @@
 
 
+local SLEEP_TIME = 1800000000 -- 1800s = 0.5h
+
 local _, boot = node.bootreason()
 print("boot reason: "..tostring(boot))
 
@@ -21,6 +23,6 @@ if dev_mode then
 else
   print("In prod mode")
   require('main')(function()
-      node.dsleep(100000000, 2) -- 100s
+      node.dsleep(SLEEP_TIME, 4)
     end)
 end
