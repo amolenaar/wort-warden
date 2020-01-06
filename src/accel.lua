@@ -35,12 +35,12 @@ end
 
 local function roll(ax , az)
     -- in integer degrees
-    return - math.floor(atan2(ax, az)/RAD)
+    return - atan2(ax, az) / RAD
 end
 
 local function pitch(ay , az)
     -- in integer degrees
-    return math.floor(atan2(ay, az)/RAD)
+    return atan2(ay, az) / RAD
 end
 
 local function tilt(ax, ay, az)

@@ -105,7 +105,7 @@ local function sample_accel_temp()
 
   ax = ax_t / rounds
   ay = ay_t / rounds
-  az = az_t / rounds
+  az = math.abs(az_t / rounds)
   t = t_t / rounds
 
   send(ubidots, {accel_x=ax, accel_y=ay, accel_z=az, temperature=t, pitch=accel.pitch(ay, az), roll=accel.roll(ax, az)})
