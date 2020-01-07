@@ -1,6 +1,7 @@
 
 
-local SLEEP_TIME = 1800000000 -- 1800s = 0.5h
+local MICROSEC = 1000000
+local SLEEP_TIME = 1800 * MICROSEC -- 1800s = 30 min
 
 local _, boot = node.bootreason()
 print("boot reason: "..tostring(boot))

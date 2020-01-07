@@ -1,3 +1,24 @@
+# The Scheduler
+#
+# The scheduler allows your program to execute multiple jobs at once.
+# This scheduler is (very) loosely inspired by BEAM, the Erlang VM.
+# Each job should be modeled as a Lua coroutine.
+#
+# Functions:
+#
+# schedule(func) -> jid
+#   Add a function `func()` to the scheduler, return a job identifier. Jobs are only executed
+#   when the `start()` is called. Jobs can be scheduled when the scheduler is running.
+# start(on_finished) -> nil
+#   Start the scheduler. `on_finished()` will be called when all jobs are finished.
+# wait(ms) -> nil
+#   Suspend processing of the job for `ms` milliseconds.
+# send(jid, msg) -> nil
+#   Send a message to a job, identified by its job id (JID). `msg` can be any lua construct.
+#   After sending the sent message object should not be changed.
+# recieve(timeout) -> msg | "TIMEOUT!"
+#   Recieve a message sent to the current job. Timeout in milliseconds.
+#
 
 local function qnew()
     return {first = 0, last = -1}
