@@ -23,6 +23,6 @@ if dev_mode then
 else
   print("In prod mode")
   require('main')(function()
-      node.dsleep(SLEEP_TIME, 4)
+      node.dsleep(SLEEP_TIME, 2)
     end)
 end
