@@ -95,7 +95,16 @@ Backlog:
 - [x] Test I<sup>2</sup>C
 - [x] Create a toggle to start into dev mode -> Use the reset button
 - [x] Disable unused modules in `app/include/user_modules.h`
-- [ ] Test without modifications with a small USB charger
-- [ ] Build everything into the PETling tube - use foamboard for starters
+- [X] Test without modifications with a small USB charger
+- [X] Build everything into the PETling tube - use foamboard for starters
+- [X] Should the I<sup>2</sup>C device be connected to vdd or to a pin, so it can be really shut off.
+- [ ] Create a simple construction so I get the same readings for fermentations
 - [ ] Calibrate vessel
-- [ ] Should the I<sup>2</sup>C device be connected to vdd or to a pin, so it can be really shut off.
+
+
+Technical notes:
+
+
+* [Basic example: wake + calibrate](https://courses.cs.washington.edu/courses/cse474/17wi/labs/l4/MPU6050BasicExample.ino)
+
+
